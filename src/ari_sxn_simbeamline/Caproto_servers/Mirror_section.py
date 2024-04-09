@@ -17,6 +17,9 @@ class FourBladeCurrent(PVGroup):
     TODO:
     1. Work out how we want to update the returned current values based on the position
     of the blades and the upstream mirrors.
+    2. Decide how we want to represent the electrometer PVs (and which ones are important).
+        - I suspect we will need some extra PVs (like dwell/acquisition time, ....) as well
+        as others. Take a look at the NSLS-II electrometer ophyd device for a list.
     """
 
     def __init__(self, *args, **kwargs):
@@ -41,6 +44,8 @@ class BaffleSlit(PVGroup):
     1. Work out how we want to define the area detector PVs, including how we 'update'
        the photo-current PVs based from each of the blades when the mirror and/or baffles
        are moved.
+    2. Decide how we want to implement the motor-record PVs.
+        - See the section in the AriM1Mirror PVGroup below on this topic.
     """
 
     def __init__(self, *args, **kwargs):
@@ -63,6 +68,42 @@ class BaffleSlit(PVGroup):
     current = SubGroup(FourBladeCurrent, prefix=':current')
 
 
+class Diagnostic(PVGroup):
+    """
+    A PVGroup that generates the PVs associated with the ARI and SXN Diagnostic units.
+
+    This class should be used to define the ARI & SXN Diagnostic unit PVs. It will
+    consist of PVs for each of the motors (main translation stage and the YaG screen
+    translation stage) as well as those related to the electrometer for the photo-diode
+    and the camera.
+
+    TODO:
+    1. Work out how we want to define the area detector PVs, including how we 'update'
+       the photo-current PVs for the photodiode and the image seen on the camera.
+    2. Decide how we want to implement the motor-record PVs.
+        - See the section in the AriM1Mirror PVGroup below on this topic.
+    3. Decide how we want to represent the electrometer PVs (and which ones are important).
+        - see Baffleslit PVGroup for more info.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
+
+    # Add the motor PVs
+    multi_trans = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
+                           resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
+                           prefix=':multi_trans')
+
+    yag_trans = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
+                         resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
+                         prefix=':yag_trans')
+
+    # Add the photodiode PVs
+    photodiode = pvproperty(value=3E-6, name=':photodiode', read_only=True)
+
+    # TODO: Add the camera Areadetector PV.
+    # camera = .........
+
+
 class AriM1Mirror(PVGroup):
     """
     A PVGroup that generates the PVs associated with the ARI M1 mirror system.
@@ -79,6 +120,14 @@ class AriM1Mirror(PVGroup):
     2. Add the vacuum component (gauges, pumps, valves, ....).
         - Temporary read only PVs have been created but I need to see what other PVs
         are associated with this hardware that we may want to simulate.
+    3. Decide how we want to implement the motor-record PVs.
+        - Currently I use the FakeMotor PVGroup from the caproto source code, this
+        does not have all of the required PVs for a motor record and so will need
+        to be replaced.
+        - Options I think are: 1, to use the C++ based Epics motor record simulated
+        IOC or 2, to write our own Epics motor record IOC in caproto with only the
+        minimum required Epics PVs for our applications (see motor record ophyd device
+        for required PVs).
 
     Parameters
     ----------
@@ -115,6 +164,9 @@ class AriM1Mirror(PVGroup):
 
     # Add the baffle slit PVs.
     baffle = SubGroup(BaffleSlit, prefix=':baffle')
+
+    # Add the diagnostic PVs.
+    diag = SubGroup(Diagnostic, prefix=':diag')
 
 
 # Add some code to start a version of the server if this file is 'run'.
