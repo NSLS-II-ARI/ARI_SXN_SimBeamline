@@ -29,15 +29,19 @@ ioc_example_to_info = {"ARI_SXN_SimBeamline.caproto_servers.ari_m1":
                        "ARI_SXN_SimBeamline.caproto_servers.diagnostic":
                        dict(group_cls='Diagnostic',
                             kwargs={},
-                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],)
+                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
                        "ARI_SXN_SimBeamline.caproto_servers.area_detector.plugin_base":
                        dict(group_cls='PluginBase',
                             kwargs={},
-                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],
+                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
                        "ARI_SXN_SimBeamline.caproto_servers.area_detector.stats_plugin":
                        dict(group_cls='StatsPlugin',
                             kwargs={},
-                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],")
+                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
+                       "ARI_SXN_SimBeamline.caproto_servers.area_detector.quad_em":
+                       dict(group_cls='QuadEM',
+                            kwargs={},
+                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],)
                        }
 
 
