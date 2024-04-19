@@ -1,5 +1,6 @@
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
+import math
 from plugin_base import PluginBase, pvproperty_rbv
 import random
 from stats_plugin import StatsPlugin
@@ -26,7 +27,8 @@ class QuadEM(PVGroup):
     3. Add description of averaging/integration time update here.
 
     TODO:
-    1. ...
+    1. Think about adding a 'Continuous' acquire_mode as well as the current
+    'Single' acquire_mode.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
@@ -53,6 +55,17 @@ class QuadEM(PVGroup):
             currents.append(random.uniform(0.0, 1E-6))
 
         return currents
+
+    def _reset_num_average(self):
+        """This is a function that resets num_averaged when required.
+
+        num_averaged requires to be reset whenever averaging_time or
+        integration_time is changed. This function will be used as the
+        putter hook for these.
+        """
+        self.num_average = math.floor(self.averaging_time/self.integration_time)
+
+        return
 
     integration_time = pvproperty_rbv(name=':IntegrationTime', dtype=float, value=0.0004)
     averaging_time = pvproperty_rbv(name=':AveragingTime', dtype=float, value=1.0)
@@ -141,6 +154,24 @@ class QuadEM(PVGroup):
 
             self.num_averaged = self.num_average  # set the number averaged to the expected values
             self.acquire = 0
+
+        return value
+
+    @averaging_time.setpoint.putter
+    async def averaging_time(obj, instance, value):
+        """
+        This is a putter function that updates num_average when averaging_time is set
+        """
+        obj.parent._reset_num_average()
+
+        return value
+
+    @integration_time.setpoint.putter
+    async def integration_time(obj, instance, value):
+        """
+        This is a putter function that updates num_average when integration_time is set
+        """
+        obj.parent._reset_num_average()
 
         return value
 
