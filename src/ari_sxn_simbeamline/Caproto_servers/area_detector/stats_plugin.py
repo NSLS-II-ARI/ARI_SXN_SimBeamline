@@ -1,5 +1,5 @@
 from caproto.server import pvproperty, ioc_arg_parser, run
-from plugin_base import PluginBase, pvproperty_rbv
+from area_detector.plugin_base import PluginBase, pvproperty_rbv
 from textwrap import dedent
 
 

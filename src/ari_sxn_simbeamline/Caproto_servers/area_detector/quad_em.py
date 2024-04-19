@@ -1,9 +1,9 @@
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
 import math
-from plugin_base import PluginBase, pvproperty_rbv
+from area_detector.plugin_base import PluginBase, pvproperty_rbv
 import random
-from stats_plugin import StatsPlugin
+from area_detector.stats_plugin import StatsPlugin
 from textwrap import dedent
 import time
 

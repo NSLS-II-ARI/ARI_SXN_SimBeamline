@@ -18,10 +18,6 @@ ioc_example_to_info = {"ARI_SXN_SimBeamline.caproto_servers.ari_m1":
                        dict(group_cls='AriM1',
                             kwargs={},
                             marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
-                       "ARI_SXN_SimBeamline.caproto_servers.four_blade_electrometer":
-                       dict(group_cls='FourBladeElectrometer',
-                            kwargs={},
-                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
                        "ARI_SXN_SimBeamline.caproto_servers.baffle_slit":
                        dict(group_cls='BaffleSlit',
                             kwargs={},
