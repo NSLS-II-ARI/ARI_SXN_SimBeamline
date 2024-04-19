@@ -23,8 +23,15 @@ class QuadEM(PVGroup):
     1. Unless otherwise listed in the notes below the PVs generated are 'Dummy' PVs
     that are not modified by any inputs, or modify any other PVs, except there own
     values when they are updated.
-    2. Add description of acquire process here
-    3. Add description of averaging/integration time update here.
+    2. When self.acquire is set to 1 the sequence of events is:
+        i. record the initial time and set self.num_averaged to 0.
+        ii.  calculate the current to be set on each channel using self._generate_current
+        and write these to the self.current(x).mean_value attributes (x in [1,2,3,4])
+        iii. if self.averaging_time has elapsed continue otherwise wait until it has.
+        iv. set self.num_averaged to self.num_average and self.acquire to 0
+    3. When self.averaging_time or self.integrating_time are updated self.num_average is
+    updated using the following relationship:
+        - self.num_average = floor(self.averaging_time/self.integration_time)
 
     TODO:
     1. Think about adding a 'Continuous' acquire_mode as well as the current
