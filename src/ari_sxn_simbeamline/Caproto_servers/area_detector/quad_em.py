@@ -1,8 +1,10 @@
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
 from plugin_base import PluginBase, pvproperty_rbv
+import random
 from stats_plugin import StatsPlugin
 from textwrap import dedent
+import time
 
 
 class QuadEM(PVGroup):
@@ -12,9 +14,9 @@ class QuadEM(PVGroup):
     The QuadEM device which this PVGroup simulates is a commonly employed 4 channel
     electrometer at NSLS-II. In this case passing in this version we randomly update
     the current values when the device is triggered via setting the 'acquire' PV to
-    1 (see Notes below for details). This is done via the self.trigger method, to
-    add functionality other than a 'random' current sub-class this class and
-    define a new self.trigger method.
+    1 (see Notes below for details). This is done via the self._generate_current
+    method, to add functionality other than a 'random' current sub-class this class and
+    define a new self._generate_current method.
 
     NOTES:
     1. Unless otherwise listed in the notes below the PVs generated are 'Dummy' PVs
@@ -28,6 +30,29 @@ class QuadEM(PVGroup):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
+
+    def _generate_current(self):
+        """
+        This method is used to generate a new set of current values for the QuadEM
+
+        This method is used to generate a list of 4 values to be set to the different
+        self.current(x).mean_value parameter, where x is in [1,2,3,4]. In this case
+        we just return a random float for each current channel, but a sub-class of
+        QuadEM with a different version of this function can output different currents
+        as required. When creating this subclass the use of self.attribute can be used
+        to interact with the various class attributes.
+
+        Returns
+        -------
+        currents, [float, float, float, float].
+            A list containing four floats which are the updated current values.
+        """
+
+        currents = []
+        for j in range(4):
+            currents.append(random.uniform(0.0, 1E-6))
+
+        return currents
 
     integration_time = pvproperty_rbv(name=':IntegrationTime', dtype=float, value=0.0004)
     averaging_time = pvproperty_rbv(name=':AveragingTime', dtype=float, value=1.0)
@@ -91,6 +116,33 @@ class QuadEM(PVGroup):
 
     image1 = SubGroup(PluginBase, prefix=":image1")
     sum_all = SubGroup(StatsPlugin, prefix=":SumAll")
+
+    # Add the code that sets new current values when 'acquire' is changed.
+    @acquire.putter
+    async def acquire(self, instance, value):
+        """
+        This is a putter function that steps through the proces required when the 'acquire'
+        PV is set to 1. If it is set to 0 it just sets itself to 0.
+        """
+        if value == 1:
+            start_timestamp = time.time()  # record initial time
+            self.acquire = 1  # at this point set the value to 1
+            self.num_averaged = 0  # set the number of averaged points to 0
+
+            currents = self._generate_current()  # calculate the new current values and write out.
+            self.compute_current_offset_1.mean_value = currents[0]
+            self.compute_current_offset_2.mean_value = currents[1]
+            self.compute_current_offset_3.mean_value = currents[2]
+            self.compute_current_offset_4.mean_value = currents[3]
+
+            # Make sure that it has taken at least averaging_time to finish
+            while time.time()-start_timestamp < self.averaging_time:
+                time.sleep(1E-3)
+
+            self.num_averaged = self.num_average  # set the number averaged to the expected values
+            self.acquire = 0
+
+        return value
 
 
 # Add some code to start a version of the server if this file is 'run'.
