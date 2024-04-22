@@ -37,7 +37,7 @@ class MotorRecord(PVGroup):
     values when they are updated.
     2. When the self.set_value attribute is updated (via the suffix.VAL PV) the sequence
     of events is:
-        i. Set self.moving to 1 and self.done_moving to 0
+        i. Set self.moving to True and self.done_moving to False
         ii. Calculate time to move based on the relationship:
             total_time = abs(self.user_readback-self.user_setpoint)/self.velocity
         iii. Calculate the number of intervals (num_intervals) to include in the motion
@@ -49,35 +49,46 @@ class MotorRecord(PVGroup):
         iv. run a for loop as follows:
             for i in range(num_interval): # move each required interval and wait.
                 wait(min_time_step)
-                if self.stop = 1: # if the user requested the motion to stop
+                if self.motor_stop: # if the user requested the motion to stop
                     self.user_setpoint = self.user_readback
                     break
                 elif self.RBV+d_interval > self.motion_range['high']: # if we trip the high limit
-                    self.high_limit_switch = 1
+                    self.high_limit_switch = True
                     self.user_setpoint = self.user_readback
                     break
                 elif self.RBV+d_interval < self.motion_range['low']: # if we trip the low limit
-                    self.low_limit_switch = 1
+                    self.low_limit_switch = True
                     self.user_setpoint = self.user_readback
                     break
                 else:
                     # The next 2 lines take care of us moving off a limit switch.
-                    self.low_limit_switch = 0
-                    self.high_limit_switch = 0
+                    self.low_limit_switch = False
+                    self.high_limit_switch = False
 
                     self.user_readback += interval
 
             self.user_readback = self.user_setpoint # Make the last move and clean up.
-            self.moving = 0
-            self.done_moving = 1
+            self.moving = False
+            self.done_moving = True
 
     """
     def __init__(self, velocity, acceleration, motion_range, *args,
                  min_time_step=0.1, **kwargs):
         super().__init__(*args, **kwargs)
-        self.motion_defaults = {'velocity': velocity, 'acceleration': acceleration}
+        self.velocity = velocity
+        self.acceleration = acceleration
         self.motion_range = motion_range
         self.min_time_step = min_time_step
+
+    user_setpoint = pvproperty(name='.VAL', dtype=float, value=0.0)
+    user_readback = pvproperty(name='.RBV', dtype=float, read_only=True, value=0)
+    velocity = pvproperty(name='.VELO', dtype=float)
+    acceleration = pvproperty(name='.ACCL', dtype=float)
+    moving = pvproperty(name='.MOVN', dtype=bool, value=False)
+    done_moving = pvproperty(name='DMOV', dtype=bool, value=True)
+    high_limit_switch = pvproperty(name='.HLS', dtype=bool, value=False)
+    low_limit_switch = pvproperty(name='.LLS', dtype=bool, value=False)
+    motor_stop = pvproperty(name='.STOP', dtype=bool, value=False)
 
 
 # Add some code to start a version of the server if this file is 'run'.
