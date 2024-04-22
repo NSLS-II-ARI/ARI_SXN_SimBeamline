@@ -1,5 +1,5 @@
-from caproto.ioc_examples.fake_motor_record import FakeMotor
 from caproto.server import PVGroup, SubGroup, pvproperty, ioc_arg_parser, run
+from motor_record import MotorRecord
 from textwrap import dedent
 
 
@@ -24,12 +24,12 @@ class Diagnostic(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the motor PVs
-    multi_trans = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                           resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
+    multi_trans = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                           motion_range={ 'low': -1, 'high': 20},
                            prefix=':multi_trans')
 
-    yag_trans = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                         resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
+    yag_trans = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                         motion_range={'low': -1, 'high': 20},
                          prefix=':yag_trans')
 
     # Add the photodiode PVs

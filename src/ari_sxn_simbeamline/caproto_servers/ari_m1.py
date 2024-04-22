@@ -3,9 +3,9 @@ This file will contain some generic caproto PVGroups used to generate the beamli
 Caproto IOC servers
 """
 from baffle_slit import BaffleSlit
-from caproto.ioc_examples.fake_motor_record import FakeMotor
 from caproto.server import PVGroup, SubGroup, pvproperty, ioc_arg_parser, run
 from diagnostic import Diagnostic
+from motor_record import MotorRecord
 from textwrap import dedent
 
 
@@ -46,20 +46,20 @@ class AriM1(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the mirror motor PVs.
-    Ry_coarse = SubGroup(FakeMotor, velocity=0.1, precision=6E-5, acceleration=1.0,
-                         resolution=6E-5, user_limits=(-3.15, -1.15), tick_rate_hz=10.,
+    Ry_coarse = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                         motion_range={'low': -3.15, 'high': -1.15},
                          prefix=':Ry_coarse')
-    Ry_fine = SubGroup(FakeMotor, velocity=0.1, precision=6E-7, acceleration=1.0,
-                       resolution=6E-7, user_limits=(-0.03, 0.03), tick_rate_hz=10.,
+    Ry_fine = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                       motion_range={'low': -0.03, 'high': 0.03},
                        prefix=':Ry_fine')
-    Rz = SubGroup(FakeMotor, velocity=0.1, precision=6E-5, acceleration=1.0,
-                  resolution=6E-5, user_limits=(-2.3, 2.3), tick_rate_hz=10.,
+    Rz = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                  motion_range={'low': -2.3, 'high': 2.3},
                   prefix=':Rz')
-    x = SubGroup(FakeMotor, velocity=0.0001, precision=5., acceleration=1.0,
-                 resolution=5., user_limits=(-10000., 10000.), tick_rate_hz=1E-3,
+    x = SubGroup(MotorRecord, velocity=0.0001, acceleration=1.0,
+                 motion_range={'low': -10000., 'high': 10000.},
                  prefix=':x')
-    y = SubGroup(FakeMotor, velocity=0.1, precision=5., acceleration=1.0,
-                 resolution=5., user_limits=(-10000., 10000.), tick_rate_hz=10.,
+    y = SubGroup(MotorRecord, velocity=0.1, acceleration=1.0,
+                 motion_range={'low': -10000., 'high': 10000.},
                  prefix=':y')
 
     # Add the mirror chamber vacuum PVs.
