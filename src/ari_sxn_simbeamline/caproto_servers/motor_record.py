@@ -85,7 +85,7 @@ class MotorRecord(PVGroup):
     velocity = pvproperty(name='.VELO', dtype=float)
     acceleration = pvproperty(name='.ACCL', dtype=float)
     moving = pvproperty(name='.MOVN', dtype=bool, value=False)
-    done_moving = pvproperty(name='DMOV', dtype=bool, value=True)
+    done_moving = pvproperty(name='.DMOV', dtype=bool, value=True)
     high_limit_switch = pvproperty(name='.HLS', dtype=bool, value=False)
     low_limit_switch = pvproperty(name='.LLS', dtype=bool, value=False)
     motor_stop = pvproperty(name='.STOP', dtype=bool, value=False)
@@ -96,5 +96,6 @@ if __name__ == "__main__":
     ioc_options, run_options = ioc_arg_parser(
         default_prefix="MotorRecord",
         desc=dedent(MotorRecord.__doc__))
-    ioc = MotorRecord(**ioc_options)
+    ioc = MotorRecord(velocity=3, acceleration=2,
+                      motion_range={'high': 30, 'low': 0}, **ioc_options)
     run(ioc.pvdb, **run_options)
