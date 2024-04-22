@@ -1,6 +1,8 @@
 from caproto.server import (pvproperty, PVGroup,
                             ioc_arg_parser, run)
+import math
 from textwrap import dedent
+import time
 
 
 class MotorRecord(PVGroup):
@@ -89,6 +91,39 @@ class MotorRecord(PVGroup):
     high_limit_switch = pvproperty(name='.HLS', dtype=bool, value=False)
     low_limit_switch = pvproperty(name='.LLS', dtype=bool, value=False)
     motor_stop = pvproperty(name='.STOP', dtype=bool, value=False)
+
+    @user_setpoint.putter
+    async def user_setpoint(self, instance, value):
+        """
+        This is the putter function that steps through the process required when
+        a new value is written to user_setpoint (the suffix.VAL PV).
+        """
+        total_time = abs(self.user_readback - self.user_setpoint) / self.velocity
+        num_intervals = math.floor(total_time / self.min_time_step)
+        interval = (self.user_readback - self.user_setpoint) / (num_intervals + 1)
+
+        for i in range(num_intervals):
+            time.sleep(self.min_time_step)
+            if self.motor_stop:
+                self.user_setpoint = self.user_readback
+                break
+            elif self.user_readback + interval > self.motion_range['high']:
+                self.high_limit_switch = True
+                self.user_setpoint = self.user_readback
+                break
+            elif self.user_readback + interval < self.motion_range['low']:
+                self.low_limit_switch = True
+                self.user_setpoint = self.user_readback
+                break
+            else:
+                # The next 2 lines take care of us moving off a limit switch.
+                self.low_limit_switch = False
+                self.high_limit_switch = False
+                self.user_readback += interval
+
+        self.user_readback = self.user_setpoint  # Make the last move and clean up.
+        self.moving = False
+        self.done_moving = True
 
 
 # Add some code to start a version of the server if this file is 'run'.
