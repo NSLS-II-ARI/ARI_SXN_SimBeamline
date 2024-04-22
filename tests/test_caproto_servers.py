@@ -29,6 +29,10 @@ ioc_example_to_info = {"ARI_SXN_SimBeamline.caproto_servers.ari_m1":
                        "ARI_SXN_SimBeamline.caproto_servers.diagnostic":
                        dict(group_cls='Diagnostic',
                             kwargs={},
+                            marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],),
+                       "ARI_SXN_SimBeamline.caproto_servers.motor_record":
+                       dict(group_cls='MotorRecord',
+                            kwargs={},
                             marks=[pytest.mark.skipif(numpy is None, reason="Requires numpy")],)
                        }
 
