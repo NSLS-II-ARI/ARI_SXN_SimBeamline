@@ -84,8 +84,10 @@ class MotorRecord(PVGroup):
 
     user_setpoint = pvproperty(name='.VAL', dtype=float, value=0.0)
     user_readback = pvproperty(name='.RBV', dtype=float, read_only=True, value=0)
+    user_offset = pvproperty(name='.OFF', dtype=float, value=0.0)
     velocity = pvproperty(name='.VELO', dtype=float)
     acceleration = pvproperty(name='.ACCL', dtype=float)
+    backlash = pvproperty(name='.BDST', dtype=float, value=0.0)
     moving = pvproperty(name='.MOVN', dtype=bool, value=False)
     done_moving = pvproperty(name='.DMOV', dtype=bool, value=True)
     high_limit_switch = pvproperty(name='.HLS', dtype=bool, value=False)
