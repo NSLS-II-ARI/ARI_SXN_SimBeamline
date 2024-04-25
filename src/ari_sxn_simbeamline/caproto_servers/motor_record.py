@@ -82,6 +82,9 @@ class MotorRecord(PVGroup):
         self.motion_range = motion_range
         self.min_time_step = min_time_step
 
+        self.high_limit.write(motion_range['high'])
+        self.low_limit.write(motion_range['low'])
+
     user_setpoint = pvproperty(name='.VAL', dtype=float, value=0.0)
     user_readback = pvproperty(name='.RBV', dtype=float, read_only=True, value=0)
     user_offset = pvproperty(name='.OFF', dtype=float, value=0.0)
@@ -90,9 +93,19 @@ class MotorRecord(PVGroup):
     backlash = pvproperty(name='.BDST', dtype=float, value=0.0)
     moving = pvproperty(name='.MOVN', dtype=bool, value=False)
     done_moving = pvproperty(name='.DMOV', dtype=bool, value=True)
+    high_limit = pvproperty(name='.HLM', dtype=float, value=100.0)
     high_limit_switch = pvproperty(name='.HLS', dtype=bool, value=False)
+    low_limit = pvproperty(name='.LLM', dtype=float, value=-100.0)
     low_limit_switch = pvproperty(name='.LLS', dtype=bool, value=False)
-    motor_stop = pvproperty(name='.STOP', dtype=bool, value=False)
+    motor_stop = pvproperty(name='.STOP', dtype=int, value=1)
+    # Some PVs required for ophyd EpicsMotor to work
+    direction = pvproperty(name='.DIR', dtype=bool, value=False)
+    offset_freeze = pvproperty(name='.FOFF', dtype=bool, value=False)
+    set_switch = pvproperty(name='.SET', dtype=bool, value=False)
+    units = pvproperty(name='.EGU', dtype=str, value='')
+    travel_direction = pvproperty(name='.TDIR', dtype=int, read_only=True, value=0)
+    home_forward = pvproperty(name='.HOMF', dtype=int, value=0)
+    home_reverse = pvproperty(name='.HOMR', dtype=int, value=0)
 
     @user_setpoint.putter
     async def user_setpoint(self, instance, value):
@@ -106,7 +119,7 @@ class MotorRecord(PVGroup):
 
         for i in range(num_intervals):
             time.sleep(self.min_time_step)
-            if self.motor_stop.value:
+            if self.motor_stop.value != 1:
                 value = self.user_readback.value
                 break
             elif self.user_readback.value + interval > self.motion_range['high']:
