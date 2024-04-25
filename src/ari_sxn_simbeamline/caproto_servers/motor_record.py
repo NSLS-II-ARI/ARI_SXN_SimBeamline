@@ -100,32 +100,33 @@ class MotorRecord(PVGroup):
         This is the putter function that steps through the process required when
         a new value is written to user_setpoint (the suffix.VAL PV).
         """
-        total_time = abs(self.user_readback - self.user_setpoint) / self.velocity
+        total_time = abs(value - self.user_readback.value) / self.velocity
         num_intervals = math.floor(total_time / self.min_time_step)
-        interval = (self.user_readback - self.user_setpoint) / (num_intervals + 1)
+        interval = (value - self.user_readback.value) / (num_intervals + 1)
 
         for i in range(num_intervals):
             time.sleep(self.min_time_step)
-            if self.motor_stop:
-                self.user_setpoint = self.user_readback
+            if self.motor_stop.value:
+                value = self.user_readback.value
                 break
-            elif self.user_readback + interval > self.motion_range['high']:
-                self.high_limit_switch = True
-                self.user_setpoint = self.user_readback
+            elif self.user_readback.value + interval > self.motion_range['high']:
+                await self.high_limit_switch.write(True)
+                value = self.user_readback.value
                 break
-            elif self.user_readback + interval < self.motion_range['low']:
-                self.low_limit_switch = True
-                self.user_setpoint = self.user_readback
+            elif self.user_readback.value + interval < self.motion_range['low']:
+                await self.low_limit_switch.write(True)
+                value = self.user_readback.value
                 break
             else:
                 # The next 2 lines take care of us moving off a limit switch.
-                self.low_limit_switch = False
-                self.high_limit_switch = False
-                self.user_readback += interval
+                await self.low_limit_switch.write(False)
+                await self.high_limit_switch.write(False)
+                await self.user_readback.write(self.user_readback.value + interval)
 
-        self.user_readback = self.user_setpoint  # Make the last move and clean up.
-        self.moving = False
-        self.done_moving = True
+        await self.user_readback.write(value)  # Make the last move and clean up.
+        await self.moving.write(False)
+        await self.done_moving.write(True)
+        return value
 
 
 # Add some code to start a version of the server if this file is 'run'.
