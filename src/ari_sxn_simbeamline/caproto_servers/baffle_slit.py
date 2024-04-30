@@ -1,6 +1,6 @@
 from caproto.ioc_examples.fake_motor_record import FakeMotor
 from caproto.server import PVGroup, SubGroup, ioc_arg_parser, run
-from four_blade_electrometer import FourBladeElectrometer
+from area_detector.quad_em import QuadEM
 from textwrap import dedent
 
 
@@ -37,7 +37,7 @@ class BaffleSlit(PVGroup):
                         resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
                         prefix=':outboard')
 
-    current = SubGroup(FourBladeElectrometer, prefix=':current')
+    currents = SubGroup(QuadEM, prefix=':currents')
 
 
 # Add some code to start a version of the server if this file is 'run'.
