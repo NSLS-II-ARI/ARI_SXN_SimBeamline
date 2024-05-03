@@ -25,6 +25,7 @@ class PluginBase(PVGroup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
+    _default_port_name = 'EM180'
     array_counter = pvproperty_rbv(name=':ArrayCounter', dtype=int)
     array_rate = pvproperty(name=':ArrayRate_RBV', dtype=float, read_only=True)
     array_size0 = pvproperty(name=':ArraySize0_RBV', dtype=int, read_only=True)
@@ -39,7 +40,8 @@ class PluginBase(PVGroup):
     pool_max_mem = pvproperty(name=':PoolMaxMem', dtype=float, read_only=True)
     pool_used_buffers = pvproperty(name=':PoolUsedBuffers', dtype=float, read_only=True)
     pool_used_mem = pvproperty(name=':PoolUsedMem', dtype=float, read_only=True)
-    port_name = pvproperty(name=':PortName_RBV', dtype=str, read_only=True)
+    port_name = pvproperty(name=':PortName_RBV', value=_default_port_name,
+                           report_as_string=True, read_only=True)
 
     bayer_pattern = pvproperty(name=':BayerPattern_RBV', dtype=int, read_only=True)
     blocking_callbacks = pvproperty_rbv(name=':BlockingCallbacks', dtype=str)
@@ -56,9 +58,11 @@ class PluginBase(PVGroup):
     enable = pvproperty_rbv(name=':EnableCallbacks', dtype=str)
     min_callback_time = pvproperty_rbv(name=':MinCallbackTime', dtype=float)
     nd_array_address = pvproperty_rbv(name=':NDArrayAddress', value=0)
-    nd_array_port = pvproperty_rbv(name=':NDArrayPort', value='EM180')
+    nd_array_port = pvproperty_rbv(name=':NDArrayPort', value=_default_port_name,
+                                   report_as_string=True)
     ndimensions = pvproperty(name=':NDimensions_RBV', dtype=int, read_only=True)
-    plugin_type = pvproperty(name=':PluginType_RBV', value='NDPluginStats', read_only=True)
+    plugin_type = pvproperty(name=':PluginType_RBV', value='NDPluginStats',
+                             report_as_string=True, read_only=True)
     queue_free = pvproperty(name=':QueueFree', dtype=int)
     queue_free_low = pvproperty(name=':QueueFreeLow', dtype=float)
     queue_size = pvproperty(name=':QueueSize', dtype=int)
