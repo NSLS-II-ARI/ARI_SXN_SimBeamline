@@ -58,8 +58,7 @@ class PluginBase(PVGroup):
     dimensions = pvproperty(name=':Dimensions_RBV', dtype=int, max_length=10,
                             read_only=True)
     dropped_arrays = pvproperty_rbv(name=':DroppedArrays', dtype=int)
-    enable = pvproperty_rbv(name=':EnableCallbacks', dtype=str,
-                            report_as_string=True)
+    enable = pvproperty_rbv(name=':EnableCallbacks', dtype=bool)
     min_callback_time = pvproperty_rbv(name=':MinCallbackTime', dtype=float)
     nd_array_address = pvproperty_rbv(name=':NDArrayAddress', value=0)
     nd_array_port = pvproperty_rbv(name=':NDArrayPort', value=_default_port_name,

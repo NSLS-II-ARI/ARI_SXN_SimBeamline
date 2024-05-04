@@ -71,7 +71,8 @@ class QuadEM(PVGroup):
         integration_time is changed. This function will be used as the
         putter hook for these.
         """
-        self.num_average = math.floor(self.averaging_time/self.integration_time)
+        self.num_average = math.floor(self.averaging_time.value/
+                                      self.integration_time.value)
 
         return
 
@@ -79,8 +80,7 @@ class QuadEM(PVGroup):
     averaging_time = pvproperty_rbv(name=':AveragingTime', dtype=float, value=1.0)
     model = pvproperty(name=':Model', dtype=str, read_only=True, value='NSLS_EM')
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
-    acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=str,
-                                  report_as_string=True, value='Single')
+    acquire_mode = pvproperty_rbv(name=':AcquireMode', value=2)
     acquire = pvproperty(name=':Acquire', dtype=int, value=True)
     read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
                                  report_as_string=True, value='')
@@ -162,10 +162,10 @@ class QuadEM(PVGroup):
             self.compute_current_offset_4.mean_value = currents[3]
 
             # Make sure that it has taken at least averaging_time to finish
-            while time.time()-start_timestamp < self.averaging_time:
-                time.sleep(1E-3)
+            #while time.time()-start_timestamp < self.averaging_time.value:
+            #    time.sleep(1E-3)
 
-            self.num_averaged = self.num_average  # set the number averaged to the expected values
+            self.num_averaged = self.num_average.value  # set the number averaged to the expected values
             self.acquire = 0
 
         return value
