@@ -1,9 +1,10 @@
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
 import math
+from area_detector.image_plugin import ImagePlugin
 from area_detector.plugin_base import PluginBase, pvproperty_rbv
-import random
 from area_detector.stats_plugin import StatsPlugin
+import random
 from textwrap import dedent
 import time
 
@@ -134,7 +135,7 @@ class QuadEM(PVGroup):
     position_scale_x = pvproperty(name=':PositionScaleX', dtype=float, value=1000000.0)
     position_scale_y = pvproperty(name=':PositionScaleY', dtype=float, value=1000000.0)
 
-    image1 = SubGroup(PluginBase, prefix=":image1")
+    image1 = SubGroup(ImagePlugin, prefix=":image1")
     sum_all = SubGroup(StatsPlugin, prefix=":SumAll")
 
     # Add the code that sets new current values when 'acquire' is changed.
