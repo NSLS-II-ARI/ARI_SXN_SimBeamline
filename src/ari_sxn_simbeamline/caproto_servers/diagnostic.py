@@ -34,7 +34,6 @@ class Diagnostic(PVGroup):
 
     # Add the photodiode PVs
     photodiode = pvproperty(value=3E-6, name=':photodiode', read_only=True)
-    test = pvproperty(value='test_string', name=':test', read_only=True)
 
     # TODO: Add the camera Areadetector PV.
     # camera = .........

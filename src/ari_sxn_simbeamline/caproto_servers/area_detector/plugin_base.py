@@ -32,7 +32,8 @@ class PluginBase(PVGroup):
     array_size1 = pvproperty(name=':ArraySize1_RBV', dtype=int, read_only=True)
     array_size2 = pvproperty(name=':ArraySize2_RBV', dtype=int, read_only=True)
 
-    nd_attributes_file = pvproperty(name=':NDAttributesFile', dtype=str, max_length=256)
+    nd_attributes_file = pvproperty(name=':NDAttributesFile', dtype=str,
+                                    report_as_string=True, max_length=256)
 
     pool_alloc_buffers = pvproperty(name=':PoolAllocBuffers', dtype=int, read_only=True)
     pool_free_buffers = pvproperty(name=':PoolFreeBuffers', dtype=int, read_only=True)
@@ -44,9 +45,11 @@ class PluginBase(PVGroup):
                            report_as_string=True, read_only=True)
 
     bayer_pattern = pvproperty(name=':BayerPattern_RBV', dtype=int, read_only=True)
-    blocking_callbacks = pvproperty_rbv(name=':BlockingCallbacks', dtype=str)
+    blocking_callbacks = pvproperty_rbv(name=':BlockingCallbacks',
+                                        report_as_string=True, dtype=str)
     color_mode = pvproperty(name=':ColorMode_RBV', dtype=int, read_only=True)
-    data_type = pvproperty(name=':DataType_RBV', dtype=str, read_only=True)
+    data_type = pvproperty(name=':DataType_RBV', dtype=str,
+                           report_as_string=True, read_only=True)
 
     dim0_sa = pvproperty(name=':Dim0SA', dtype=int, max_length=10)
     dim1_sa = pvproperty(name=':Dim1SA', dtype=int, max_length=10)
@@ -55,7 +58,8 @@ class PluginBase(PVGroup):
     dimensions = pvproperty(name=':Dimensions_RBV', dtype=int, max_length=10,
                             read_only=True)
     dropped_arrays = pvproperty_rbv(name=':DroppedArrays', dtype=int)
-    enable = pvproperty_rbv(name=':EnableCallbacks', dtype=str)
+    enable = pvproperty_rbv(name=':EnableCallbacks', dtype=str,
+                            report_as_string=True)
     min_callback_time = pvproperty_rbv(name=':MinCallbackTime', dtype=float)
     nd_array_address = pvproperty_rbv(name=':NDArrayAddress', value=0)
     nd_array_port = pvproperty_rbv(name=':NDArrayPort', value=_default_port_name,

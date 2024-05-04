@@ -79,15 +79,18 @@ class QuadEM(PVGroup):
     averaging_time = pvproperty_rbv(name=':AveragingTime', dtype=float, value=1.0)
     model = pvproperty(name=':Model', dtype=str, read_only=True, value='NSLS_EM')
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
-    acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=str, value='Single')
+    acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=str,
+                                  report_as_string=True, value='Single')
     acquire = pvproperty(name=':Acquire', dtype=int, value=True)
-    read_format = pvproperty_rbv(name=':ReadFormat', dtype=str, value='')
+    read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
+                                 report_as_string=True, value='')
     range = pvproperty_rbv(name=':Range', dtype=str, value='350 pC')
     ping_pong = pvproperty_rbv(name=':PingPong', dtype=str, value='Phase 0')
     num_channels = pvproperty_rbv(name=':NumChannels', dtype=int, value=4)
     geometry = pvproperty_rbv(name=':Geometry', dtype=str, value='Diamond')
     resolution = pvproperty_rbv(name=':Resolution', dtype=float, value=1E-12)
-    bias_state = pvproperty_rbv(name=':BiasState', dtype=str, value='')
+    bias_state = pvproperty_rbv(name=':BiasState', dtype=str,
+                                report_as_string=True, value='')
 
     hvs_readback = pvproperty(name=':HVSReadback', dtype=float, read_only=True, value=0)
     hvv_readback = pvproperty(name=':HVVReadback', dtype=float, read_only=True, value=0)
@@ -116,13 +119,15 @@ class QuadEM(PVGroup):
     current_scale_2 = pvproperty(name=':CurrentScale2', dtype=float, value=9.0)
     current2 = SubGroup(StatsPlugin, prefix=":Current2")
 
-    current_name_3 = pvproperty(name=':CurrentName3', dtype=str, value='Current 3')
+    current_name_3 = pvproperty(name=':CurrentName3', dtype=str,
+                                report_as_string=True, value='Current 3')
     current_offset_3 = pvproperty(name=':CurrentOffset3', dtype=float, value=0.0)
     compute_current_offset_3 = pvproperty(name=':ComputeCurrentOffset3', dtype=bool, value=False)
     current_scale_3 = pvproperty(name=':CurrentScale3', dtype=float, value=9.0)
     current3 = SubGroup(StatsPlugin, prefix=":Current3")
 
-    current_name_4 = pvproperty(name=':CurrentName4', dtype=str, value='Current 4')
+    current_name_4 = pvproperty(name=':CurrentName4', dtype=str,
+                                report_as_string=True, value='Current 4')
     current_offset_4 = pvproperty(name=':CurrentOffset4', dtype=float, value=0.0)
     compute_current_offset_4 = pvproperty(name=':ComputeCurrentOffset4', dtype=bool, value=False)
     current_scale_4 = pvproperty(name=':CurrentScale4', dtype=float, value=9.0)
