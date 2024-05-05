@@ -42,7 +42,7 @@ class QuadEM(PVGroup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
 
-    def _generate_current(self):
+    async def _generate_currents(self):
         """
         This method is used to generate a new set of current values for the QuadEM
 
@@ -65,15 +65,15 @@ class QuadEM(PVGroup):
 
         return currents
 
-    def _reset_num_average(self):
+    async def _reset_num_average(self):
         """This is a function that resets num_averaged when required.
 
         num_averaged requires to be reset whenever averaging_time or
         integration_time is changed. This function will be used as the
         putter hook for these.
         """
-        self.num_average = math.floor(self.averaging_time.readback.value /
-                                      self.integration_time.readback.value)
+        await self.num_average.write(math.floor(self.averaging_time.readback.value /
+                                                self.integration_time.readback.value))
 
         return
 
@@ -154,21 +154,17 @@ class QuadEM(PVGroup):
         """
         if value == 1:
             start_timestamp = time.time()  # record initial time
-            self.acquire = 1  # at this point set the value to 1
-            self.num_averaged = 0  # set the number of averaged points to 0
-
-            currents = self._generate_current()  # calculate the new current values and write out.
-            self.compute_current_offset_1.mean_value = currents[0]
-            self.compute_current_offset_2.mean_value = currents[1]
-            self.compute_current_offset_3.mean_value = currents[2]
-            self.compute_current_offset_4.mean_value = currents[3]
-
+            await self.num_averaged.write(0)  # set the number of averaged points to 0
+            currents = await self._generate_currents()  # calculate the new current values and write out.
+            await self.current1.mean_value.write(currents[0])
+            await self.current2.mean_value.write(currents[1])
+            await self.current3.mean_value.write(currents[2])
+            await self.current4.mean_value.write(currents[3])
             # Make sure that it has taken at least averaging_time to finish
             while time.time()-start_timestamp < self.averaging_time.readback.value:
                 time.sleep(1E-3)
 
-            self.num_averaged = self.num_average.value  # set the number averaged to the expected values
-            self.acquire = 0
+            await self.num_averaged.write(self.num_average.value)
 
         return value
 
