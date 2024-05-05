@@ -72,6 +72,7 @@ class QuadEM(PVGroup):
         integration_time is changed. This function will be used as the
         putter hook for these.
         """
+
         await self.num_average.write(math.floor(self.averaging_time.readback.value /
                                                 self.integration_time.readback.value))
 
@@ -173,7 +174,8 @@ class QuadEM(PVGroup):
         """
         This is a putter function that updates num_average when averaging_time is set
         """
-        obj.parent._reset_num_average()
+        await obj.readback.write(value)
+        await obj.parent._reset_num_average()
 
         return value
 
@@ -182,7 +184,8 @@ class QuadEM(PVGroup):
         """
         This is a putter function that updates num_average when integration_time is set
         """
-        obj.parent._reset_num_average()
+        await obj.readback.write(value)
+        await obj.parent._reset_num_average()
 
         return value
 
