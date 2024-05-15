@@ -1,9 +1,11 @@
+from caproto import ChannelType
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
 import math
+from area_detector.image_plugin import ImagePlugin
 from area_detector.plugin_base import PluginBase, pvproperty_rbv
-import random
 from area_detector.stats_plugin import StatsPlugin
+import random
 from textwrap import dedent
 import time
 
@@ -40,7 +42,7 @@ class QuadEM(PVGroup):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
 
-    def _generate_current(self):
+    async def _generate_currents(self):
         """
         This method is used to generate a new set of current values for the QuadEM
 
@@ -63,14 +65,16 @@ class QuadEM(PVGroup):
 
         return currents
 
-    def _reset_num_average(self):
+    async def _reset_num_average(self):
         """This is a function that resets num_averaged when required.
 
         num_averaged requires to be reset whenever averaging_time or
         integration_time is changed. This function will be used as the
         putter hook for these.
         """
-        self.num_average = math.floor(self.averaging_time/self.integration_time)
+
+        await self.num_average.write(math.floor(self.averaging_time.readback.value /
+                                                self.integration_time.readback.value))
 
         return
 
@@ -78,15 +82,18 @@ class QuadEM(PVGroup):
     averaging_time = pvproperty_rbv(name=':AveragingTime', dtype=float, value=1.0)
     model = pvproperty(name=':Model', dtype=str, read_only=True, value='NSLS_EM')
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
-    acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=str, value='Single')
+    acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM, value='Single',
+                                  enum_strings=['', 'Continuos', 'Single'])
     acquire = pvproperty(name=':Acquire', dtype=int, value=True)
-    read_format = pvproperty_rbv(name=':ReadFormat', dtype=str, value='')
+    read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
+                                 report_as_string=True, value='')
     range = pvproperty_rbv(name=':Range', dtype=str, value='350 pC')
     ping_pong = pvproperty_rbv(name=':PingPong', dtype=str, value='Phase 0')
     num_channels = pvproperty_rbv(name=':NumChannels', dtype=int, value=4)
     geometry = pvproperty_rbv(name=':Geometry', dtype=str, value='Diamond')
     resolution = pvproperty_rbv(name=':Resolution', dtype=float, value=1E-12)
-    bias_state = pvproperty_rbv(name=':BiasState', dtype=str, value='')
+    bias_state = pvproperty_rbv(name=':BiasState', dtype=str,
+                                report_as_string=True, value='')
 
     hvs_readback = pvproperty(name=':HVSReadback', dtype=float, read_only=True, value=0)
     hvv_readback = pvproperty(name=':HVVReadback', dtype=float, read_only=True, value=0)
@@ -115,13 +122,15 @@ class QuadEM(PVGroup):
     current_scale_2 = pvproperty(name=':CurrentScale2', dtype=float, value=9.0)
     current2 = SubGroup(StatsPlugin, prefix=":Current2")
 
-    current_name_3 = pvproperty(name=':CurrentName3', dtype=str, value='Current 3')
+    current_name_3 = pvproperty(name=':CurrentName3', dtype=str,
+                                report_as_string=True, value='Current 3')
     current_offset_3 = pvproperty(name=':CurrentOffset3', dtype=float, value=0.0)
     compute_current_offset_3 = pvproperty(name=':ComputeCurrentOffset3', dtype=bool, value=False)
     current_scale_3 = pvproperty(name=':CurrentScale3', dtype=float, value=9.0)
     current3 = SubGroup(StatsPlugin, prefix=":Current3")
 
-    current_name_4 = pvproperty(name=':CurrentName4', dtype=str, value='Current 4')
+    current_name_4 = pvproperty(name=':CurrentName4', dtype=str,
+                                report_as_string=True, value='Current 4')
     current_offset_4 = pvproperty(name=':CurrentOffset4', dtype=float, value=0.0)
     compute_current_offset_4 = pvproperty(name=':ComputeCurrentOffset4', dtype=bool, value=False)
     current_scale_4 = pvproperty(name=':CurrentScale4', dtype=float, value=9.0)
@@ -134,7 +143,7 @@ class QuadEM(PVGroup):
     position_scale_x = pvproperty(name=':PositionScaleX', dtype=float, value=1000000.0)
     position_scale_y = pvproperty(name=':PositionScaleY', dtype=float, value=1000000.0)
 
-    image1 = SubGroup(PluginBase, prefix=":image1")
+    image1 = SubGroup(ImagePlugin, prefix=":image1")
     sum_all = SubGroup(StatsPlugin, prefix=":SumAll")
 
     # Add the code that sets new current values when 'acquire' is changed.
@@ -146,21 +155,17 @@ class QuadEM(PVGroup):
         """
         if value == 1:
             start_timestamp = time.time()  # record initial time
-            self.acquire = 1  # at this point set the value to 1
-            self.num_averaged = 0  # set the number of averaged points to 0
-
-            currents = self._generate_current()  # calculate the new current values and write out.
-            self.compute_current_offset_1.mean_value = currents[0]
-            self.compute_current_offset_2.mean_value = currents[1]
-            self.compute_current_offset_3.mean_value = currents[2]
-            self.compute_current_offset_4.mean_value = currents[3]
-
+            await self.num_averaged.write(0)  # set the number of averaged points to 0
+            currents = await self._generate_currents()  # calculate the new current values and write out.
+            await self.current1.mean_value.write(currents[0])
+            await self.current2.mean_value.write(currents[1])
+            await self.current3.mean_value.write(currents[2])
+            await self.current4.mean_value.write(currents[3])
             # Make sure that it has taken at least averaging_time to finish
-            while time.time()-start_timestamp < self.averaging_time:
+            while time.time()-start_timestamp < self.averaging_time.readback.value:
                 time.sleep(1E-3)
 
-            self.num_averaged = self.num_average  # set the number averaged to the expected values
-            self.acquire = 0
+            await self.num_averaged.write(self.num_average.value)
 
         return value
 
@@ -169,7 +174,8 @@ class QuadEM(PVGroup):
         """
         This is a putter function that updates num_average when averaging_time is set
         """
-        obj.parent._reset_num_average()
+        await obj.readback.write(value)
+        await obj.parent._reset_num_average()
 
         return value
 
@@ -178,7 +184,8 @@ class QuadEM(PVGroup):
         """
         This is a putter function that updates num_average when integration_time is set
         """
-        obj.parent._reset_num_average()
+        await obj.readback.write(value)
+        await obj.parent._reset_num_average()
 
         return value
 
