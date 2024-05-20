@@ -24,20 +24,12 @@ class BaffleSlit(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the baffle motor PVs.
-    top = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                   resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
-                   prefix=':top')
-    bottom = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                      resolution=6E-3, user_limits=(-20, 1), tick_rate_hz=10.,
-                      prefix=':bottom')
-    inboard = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                       resolution=6E-3, user_limits=(-20, 1), tick_rate_hz=10.,
-                       prefix=':inboard')
-    outboard = SubGroup(FakeMotor, velocity=0.1, precision=6E-3, acceleration=1.0,
-                        resolution=6E-3, user_limits=(-1, 20), tick_rate_hz=10.,
-                        prefix=':outboard')
+    top = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20), prefix=':Top')
+    bottom = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-20, 1), prefix=':Bottom')
+    inboard = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-20, 1), prefix=':Inboard')
+    outboard = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20), prefix=':Outboard')
 
-    currents = SubGroup(QuadEM, prefix=':currents')
+    currents = SubGroup(QuadEM, prefix=':Currents')
 
 
 # Add some code to start a version of the server if this file is 'run'.
