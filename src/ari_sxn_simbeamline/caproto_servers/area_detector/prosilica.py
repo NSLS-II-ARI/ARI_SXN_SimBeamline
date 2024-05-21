@@ -60,6 +60,21 @@ class Prosilica(PVGroup):
 
         return image
 
+    async def _reset_acquire_period(self):
+        """This is a function that resets num_averaged when required.
+
+        num_averaged requires to be reset whenever self.acquire_time,
+        self.num_exposures or self.num_images are updated. This
+        function will be used as the putter hook for these.
+        """
+
+        await self.image1.acquire_period.write(
+            self.image1.acquire_time.readback.value *
+            self.image1.num_exposures.readback.value *
+            self.image1.num_images.readback.value)
+
+        return
+
 
 # Add some code to start a version of the server if this file is 'run'.
 if __name__ == "__main__":
