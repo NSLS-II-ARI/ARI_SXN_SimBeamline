@@ -28,7 +28,6 @@ class ImagePlugin(PluginBase):
     1. ...
     """
 
-
     async def _generate_image(self):
         """
         This method returns an image to be used as the return array.
@@ -65,7 +64,6 @@ class ImagePlugin(PluginBase):
 
         return
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
 
@@ -93,6 +91,35 @@ class ImagePlugin(PluginBase):
                                 value='idle', enum_strings=['idle', 'acquiring'],
                                 read_only=True)
 
+    @acquire_time.setpoint.putter
+    async def acquire_time(obj, instance, value):
+        """
+        This is a putter function that updates num_average when averaging_time is set
+        """
+        await obj.readback.write(value)
+        await obj.parent._reset_acquire_period()
+
+        return value
+
+    @num_exposures.setpoint.putter
+    async def num_exposures(obj, instance, value):
+        """
+        This is a putter function that updates num_average when averaging_time is set
+        """
+        await obj.readback.write(value)
+        await obj.parent._reset_acquire_period()
+
+        return value
+
+    @num_images.setpoint.putter
+    async def num_images(obj, instance, value):
+        """
+        This is a putter function that updates num_average when averaging_time is set
+        """
+        await obj.readback.write(value)
+        await obj.parent._reset_acquire_period()
+
+        return value
 
     # Add some code to start a version of the server if this file is 'run'.
     if __name__ == "__main__":
