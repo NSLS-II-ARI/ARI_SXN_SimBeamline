@@ -15,11 +15,11 @@ class QuadEM(PVGroup):
     A PV Group that generates the PVs associated with a QuadEM device.
 
     The QuadEM device which this PVGroup simulates is a commonly employed 4 channel
-    electrometer at NSLS-II. In this case passing in this version we randomly update
-    the current values when the device is triggered via setting the 'acquire' PV to
-    1 (see Notes below for details). This is done via the self._generate_current
-    method, to add functionality other than a 'random' current sub-class this class and
-    define a new self._generate_current method.
+    electrometer at NSLS-II. In this version we randomly update the current values
+    when the device is triggered via setting the 'acquire' PV to 1 (see Notes below
+    for details). This is done via the self._generate_current method, to add
+    functionality other than a 'random' current use a sub-class which defines a
+    new self._generate_current method.
 
     NOTES:
     1. Unless otherwise listed in the notes below the PVs generated are 'Dummy' PVs
