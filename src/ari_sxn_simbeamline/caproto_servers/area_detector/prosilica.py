@@ -23,7 +23,8 @@ class Prosilica(PVGroup):
     except there own values when they are updated.
     """
 
-
+    manufacturer = pvproperty(name=':Manufacturer', value='Allied Vision')
+    model = pvproperty(name=':Model', value='Prosilica')
 
 
 # Add some code to start a version of the server if this file is 'run'.

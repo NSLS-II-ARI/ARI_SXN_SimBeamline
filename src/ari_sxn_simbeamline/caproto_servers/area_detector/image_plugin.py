@@ -1,5 +1,6 @@
-from caproto.server import pvproperty, ioc_arg_parser, run
 from area_detector.plugin_base import PluginBase
+from caproto import ChannelType
+from caproto.server import pvproperty, ioc_arg_parser, run
 import numpy as np
 from textwrap import dedent
 
@@ -84,12 +85,13 @@ class ImagePlugin(PluginBase):
                                 read_only=True)
     num_exposures = pvproperty(name=':NumExposures', value=1, dtype=int)
     num_images = pvproperty(name=':NumImages', value=1, dtype=int)
-    image_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM,
-                                value='Single',
-                                enum_strings=['', 'Continuous', 'Single'])
+    image_mode = pvproperty(name=':AcquireMode', dtype=ChannelType.ENUM,
+                            value='Single', enum_strings=['', 'Continuous',
+                                                          'Single'])
     detector_state = pvproperty(name=':DetectorStateRBV', dtype=ChannelType.ENUM,
                                 value='idle', enum_strings=['idle', 'acquiring'],
                                 read_only=True)
+
 
     @acquire.putter
     async def acquire(self, instance, value):
@@ -110,35 +112,36 @@ class ImagePlugin(PluginBase):
 
         return value
 
-    @acquire_time.setpoint.putter
+    @acquire_time.putter
     async def acquire_time(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
         """
-        await obj.readback.write(value)
+        await obj.write(value)
         await obj.parent._reset_acquire_period()
 
         return value
 
-    @num_exposures.setpoint.putter
+    @num_exposures.putter
     async def num_exposures(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
         """
-        await obj.readback.write(value)
+        await obj.write(value)
         await obj.parent._reset_acquire_period()
 
         return value
 
-    @num_images.setpoint.putter
+    @num_images.putter
     async def num_images(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
         """
-        await obj.readback.write(value)
+        await obj.write(value)
         await obj.parent._reset_acquire_period()
 
         return value
+
 
     # Add some code to start a version of the server if this file is 'run'.
     if __name__ == "__main__":
