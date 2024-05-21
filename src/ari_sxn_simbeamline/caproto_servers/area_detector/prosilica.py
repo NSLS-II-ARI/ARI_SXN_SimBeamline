@@ -1,6 +1,8 @@
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
+import numpy as np
 from textwrap import dedent
+
 
 class Prosilica(PVGroup):
     """
@@ -31,6 +33,33 @@ class Prosilica(PVGroup):
         - self.acquire_period = self.acquire_time * self.num_exposures *
                                 self.num_images
     """
+    async def _generate_image(self):
+        """
+        This method is used to generate a new image for the prosilica camera
+
+        This method is used to generate an image to be used by the image1 child-
+        class when the detector is triggered. In this case we just return a
+        random image, but a sub-class of Prosilica with a different version of
+        this function can output a different image as required. When creating
+        this subclass the use of self.attribute can be used to interact with
+        the various class attributes.
+
+        NOTE:
+        This image will need to be flattened using image.flatten() when writing
+        to self.array_data but not if saving as a file.
+
+        Returns
+        -------
+        image : np.array
+            A self.image1.array_size.width x self.image1.array_size.height
+            numpy array with integer values between 0 and 256.
+        """
+
+        image = np.random.randint(0, 257, (self.image1.array_size.width,
+                                           self.image1.array_size.height))
+
+        return image
+
 
 # Add some code to start a version of the server if this file is 'run'.
 if __name__ == "__main__":

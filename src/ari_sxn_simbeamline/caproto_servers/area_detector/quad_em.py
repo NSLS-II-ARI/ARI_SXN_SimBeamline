@@ -55,7 +55,7 @@ class QuadEM(PVGroup):
 
         Returns
         -------
-        currents, [float, float, float, float].
+        currents : [float, float, float, float].
             A list containing four floats which are the updated current values.
         """
 
