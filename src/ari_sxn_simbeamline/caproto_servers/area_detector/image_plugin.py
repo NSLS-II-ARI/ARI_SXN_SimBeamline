@@ -91,6 +91,25 @@ class ImagePlugin(PluginBase):
                                 value='idle', enum_strings=['idle', 'acquiring'],
                                 read_only=True)
 
+    @acquire.putter
+    async def acquire(self, instance, value):
+        """
+        This is a putter function that steps through the proces required when the 'acquire'
+        PV is set to 1. If it is set to 0 it just sets itself to 0.
+        """
+        if value == 1:
+            start_timestamp = time.time()  # record initial time
+            await self.array_counter.write(0)  # set the number of averaged points to 0
+            image = await self._generate_image()  # calculate the new image.
+            await self.array_data.write(image.flatten())
+            # Make sure that it has taken at least averaging_time to finish
+            while time.time() - start_timestamp < self.acquire_period.value:
+                time.sleep(1E-3)
+
+            await self.array_counter.write(self.num_exposures)
+
+        return value
+
     @acquire_time.setpoint.putter
     async def acquire_time(obj, instance, value):
         """
