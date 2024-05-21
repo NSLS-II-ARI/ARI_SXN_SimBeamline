@@ -1,5 +1,6 @@
 from caproto.server import pvproperty, ioc_arg_parser, run
 from area_detector.plugin_base import PluginBase
+import numpy as np
 from textwrap import dedent
 
 
@@ -11,10 +12,60 @@ class ImagePlugin(PluginBase):
     1. Unless otherwise listed in the notes below the PVs generated are 'Dummy' PVs
     that are not modified by any inputs, or modify any other PVs, except there own
     values when they are updated.
+    2. When self.acquire is set to 1 the sequence of events is:
+        i. record the initial time and set self.array_counter to 0.
+        ii. calculate the image to be returned using self._generate_image
+            and write this to the self.image1.array_data attribute
+        iii. if self.acquire_time has elapsed continue otherwise wait until
+             it has.
+        iv. set self.array_counter to self.num_exposures and self.acquire to 0
+    3. When self.acquire_time, self.num_exposures or self.num_images are updated
+       self.acquire_period should be updated using the following relationship:
+        - self.acquire_period = self.acquire_time * self.num_exposures *
+                                self.num_images
 
     TODO:
     1. ...
     """
+
+
+    async def _generate_image(self):
+        """
+        This method returns an image to be used as the return array.
+
+        This method returns a self.array_size0 x array_size1 random image
+        array to be used inside a putter hook for self.acquire which also
+        updates array data with the flattened version of the returned image
+        file via image.flatten().
+
+        Returns
+        -------
+        image : np.array,
+            A self.array_size0 x self.array_size1 numpy array consisting of
+            random integers between 0 and 256.
+
+        """
+        image = np.random.randint(0, 257, size=(self.array_size0,
+                                                self.array_size1))
+
+        return image
+
+    async def _reset_acquire_period(self):
+        """This is a method that resets num_averaged when required.
+
+        self.num_averaged requires to be reset whenever self.acquire_time,
+        self.num_exposures or self.num_images are updated. This
+        method will be used as the putter hook for these.
+        """
+
+        await self.acquire_period.write(
+            self.acquire_time.readback.value *
+            self.num_exposures.readback.value *
+            self.num_images.readback.value)
+
+        return
+
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)  # call the PluginBase __init__ function
 
@@ -29,6 +80,7 @@ class ImagePlugin(PluginBase):
     array_size2 = pvproperty(name=':ArraySize2_RBV', value=1, dtype=int,
                              read_only=True)
     # Acquisition properties
+    acquire = pvproperty(name=':Acquire', dtype=int, value=True)
     acquire_time = pvproperty(name=':AcquireTime', value=0.1, dtype=float)
     acquire_period = pvproperty(name=':AcquirePeriod', value=0.1, dtype=float,
                                 read_only=True)
