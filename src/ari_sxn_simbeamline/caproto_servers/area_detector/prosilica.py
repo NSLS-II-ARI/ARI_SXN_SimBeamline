@@ -51,12 +51,12 @@ class Prosilica(PVGroup):
         Returns
         -------
         image : np.array
-            A self.image1.array_size.width x self.image1.array_size.height
-            numpy array with integer values between 0 and 256.
+            A self.image1.array_size0 x self.image1.array_size1 numpy array with
+            integer values between 0 and 256.
         """
 
-        image = np.random.randint(0, 257, (self.image1.array_size.width,
-                                           self.image1.array_size.height))
+        image = np.random.randint(0, 257, (self.image1.array_size0,
+                                           self.image1.array_size1))
 
         return image
 
