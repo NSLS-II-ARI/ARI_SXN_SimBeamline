@@ -83,7 +83,7 @@ class QuadEM(PVGroup):
     model = pvproperty(name=':Model', dtype=str, read_only=True, value='NSLS_EM')
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
     acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM, value='Single',
-                                  enum_strings=['', 'Continuos', 'Single'])
+                                  enum_strings=['', 'Continuous', 'Single'])
     acquire = pvproperty(name=':Acquire', dtype=int, value=True)
     read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
                                  report_as_string=True, value='')
