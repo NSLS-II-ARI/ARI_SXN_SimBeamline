@@ -30,11 +30,16 @@ class ImagePlugin(PluginBase):
                              read_only=True)
     # Acquisition properties
     acquire_time = pvproperty(name=':AcquireTime', value=0.1, dtype=float)
+    acquire_period = pvproperty(name=':AcquirePeriod', value=0.1, dtype=float,
+                                read_only=True)
     num_exposures = pvproperty(name=':NumExposures', value=1, dtype=int)
     num_images = pvproperty(name=':NumImages', value=1, dtype=int)
     image_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM,
                                 value='Single',
                                 enum_strings=['', 'Continuous', 'Single'])
+    detector_state = pvproperty(name=':DetectorStateRBV', dtype=ChannelType.ENUM,
+                                value='idle', enum_strings=['idle', 'acquiring'],
+                                read_only=True)
 
 
     # Add some code to start a version of the server if this file is 'run'.
