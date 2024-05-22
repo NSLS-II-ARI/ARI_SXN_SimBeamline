@@ -11,8 +11,10 @@ class ProsilicaCamPlugin(CamPlugin):
     properties.
     """
 
-    manufacturer = pvproperty(name=':Manufacturer', value='Allied Vision')
-    model = pvproperty(name=':Model', value='Prosilica')
+    manufacturer = pvproperty(name=':Manufacturer_RBV', value='Allied Vision',
+                              read_only=True, report_as_string=True)
+    model = pvproperty(name=':Model_RBV', value='Prosilica', read_only=True,
+                       report_as_string=True)
 
 # Add some code to start a version of the server if this file is 'run'.
 if __name__ == "__main__":

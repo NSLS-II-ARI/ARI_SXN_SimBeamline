@@ -84,13 +84,21 @@ class CamPlugin(PluginBase):
     acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float)
     num_exposures = pvproperty_rbv(name=':NumExposures', value=1, dtype=int)
     num_images = pvproperty_rbv(name=':NumImages', value=1, dtype=int)
-    image_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM,
-                            value='Single', enum_strings=['SINGLE', 'MULTIPLE','CONTINUOUS'])
-    detector_state = pvproperty(name=':DetectorStateRBV', dtype=ChannelType.ENUM,
+    image_mode = pvproperty_rbv(name=':ImageMode', dtype=ChannelType.ENUM,
+                                value='Single', enum_strings=['Single', 'Multiple',
+                                                              'Continuous'])
+    detector_state = pvproperty(name=':DetectorState_RBV', dtype=ChannelType.ENUM,
                                 value='idle', enum_strings=['idle', 'acquiring'],
                                 read_only=True)
-    manufacturer = pvproperty(name=':Manufacturer_RBV', value='default', read_only=True)
-    model = pvproperty(name=':Model_RBV', value='default', read_only=True)
+
+    # trigger properties
+    trigger_mode = pvproperty_rbv(name=':TriggerMode', value='off')
+
+    # Detector Properties
+    manufacturer = pvproperty(name=':Manufacturer_RBV', value='default', read_only=True,
+                              report_as_string=True)
+    model = pvproperty(name=':Model_RBV', value='default', read_only=True,
+                       report_as_string=True)
 
     @acquire.setpoint.putter
     async def acquire(self, instance, value):
