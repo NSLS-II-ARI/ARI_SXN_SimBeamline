@@ -4,7 +4,6 @@ from caproto.server import pvproperty, ioc_arg_parser, run
 import numpy as np
 from textwrap import dedent
 
-
 class CamPlugin(PluginBase):
     """
     A PV Group that generates the PVs associated with an Area Detector Stats Plugin.
@@ -71,13 +70,15 @@ class CamPlugin(PluginBase):
     # Write some new values for the image plugin
     plugin_type = pvproperty(name=':PluginType_RBV', value='NDPluginStdArrays',
                              report_as_string=True, read_only=True)
-    # set the image size
+    # image array properties
     array_size0 = pvproperty(name=':ArraySize0_RBV', value=1544, dtype=int,
                              read_only=True,)
     array_size1 = pvproperty(name=':ArraySize1_RBV', value=2064, dtype=int,
                              read_only=True)
     array_size2 = pvproperty(name=':ArraySize2_RBV', value=1, dtype=int,
                              read_only=True)
+    array_data = pvproperty(name=':ArrayData', dtype=int, max_length=300000)
+
     # Acquisition properties
     acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
     acquire_time = pvproperty_rbv(name=':AcquireTime', value=0.1, dtype=float)
@@ -92,7 +93,7 @@ class CamPlugin(PluginBase):
                                 read_only=True)
 
     # trigger properties
-    trigger_mode = pvproperty_rbv(name=':TriggerMode', value='off')
+    trigger_mode = pvproperty_rbv(name=':TriggerMode', value='off', report_as_string=True)
 
     # Detector Properties
     manufacturer = pvproperty(name=':Manufacturer_RBV', value='default', read_only=True,
