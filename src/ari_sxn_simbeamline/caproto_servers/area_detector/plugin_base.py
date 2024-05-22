@@ -28,6 +28,7 @@ class PluginBase(PVGroup):
     _default_port_name = 'EM180'
     array_counter = pvproperty_rbv(name=':ArrayCounter', dtype=int)
     array_rate = pvproperty(name=':ArrayRate_RBV', dtype=float, read_only=True)
+
     array_size0 = pvproperty(name=':ArraySize0_RBV', dtype=int, read_only=True)
     array_size1 = pvproperty(name=':ArraySize1_RBV', dtype=int, read_only=True)
     array_size2 = pvproperty(name=':ArraySize2_RBV', dtype=int, read_only=True)

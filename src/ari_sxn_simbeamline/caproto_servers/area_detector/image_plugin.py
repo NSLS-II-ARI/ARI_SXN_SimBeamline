@@ -1,4 +1,4 @@
-from area_detector.plugin_base import PluginBase
+from area_detector.plugin_base import PluginBase, pvproperty_rbv
 from caproto import ChannelType
 from caproto.server import pvproperty, ioc_arg_parser, run
 import numpy as np
@@ -79,19 +79,19 @@ class ImagePlugin(PluginBase):
     array_size2 = pvproperty(name=':ArraySize2_RBV', value=1, dtype=int,
                              read_only=True)
     # Acquisition properties
-    acquire = pvproperty(name=':Acquire', dtype=int, value=True)
-    acquire_time = pvproperty(name=':AcquireTime', value=0.1, dtype=float)
-    acquire_period = pvproperty(name=':AcquirePeriod', value=0.1, dtype=float,
+    acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
+    acquire_time = pvproperty_rbv(name=':AcquireTime', value=0.1, dtype=float)
+    acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float,
                                 read_only=True)
     num_exposures = pvproperty(name=':NumExposures', value=1, dtype=int)
     num_images = pvproperty(name=':NumImages', value=1, dtype=int)
-    image_mode = pvproperty(name=':AcquireMode', dtype=ChannelType.ENUM,
-                            value='Single', enum_strings=['', 'Continuous',
-                                                          'Single'])
+    image_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM,
+                            value='Single', enum_strings=['SINGLE', 'MULTIPLE','CONTINUOUS'])
     detector_state = pvproperty(name=':DetectorStateRBV', dtype=ChannelType.ENUM,
                                 value='idle', enum_strings=['idle', 'acquiring'],
                                 read_only=True)
-
+    manufacturer = pvproperty(name=':Manufacturer_RBV', value='default', read_only=True)
+    model = pvproperty(name=':Model_RBV', value='default', read_only=True)
 
     @acquire.putter
     async def acquire(self, instance, value):
@@ -141,7 +141,6 @@ class ImagePlugin(PluginBase):
         await obj.parent._reset_acquire_period()
 
         return value
-
 
     # Add some code to start a version of the server if this file is 'run'.
     if __name__ == "__main__":
