@@ -5,7 +5,7 @@ import numpy as np
 from textwrap import dedent
 
 
-class ImagePlugin(PluginBase):
+class CamPlugin(PluginBase):
     """
     A PV Group that generates the PVs associated with an Area Detector Stats Plugin.
 
@@ -81,10 +81,9 @@ class ImagePlugin(PluginBase):
     # Acquisition properties
     acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
     acquire_time = pvproperty_rbv(name=':AcquireTime', value=0.1, dtype=float)
-    acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float,
-                                read_only=True)
-    num_exposures = pvproperty(name=':NumExposures', value=1, dtype=int)
-    num_images = pvproperty(name=':NumImages', value=1, dtype=int)
+    acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float)
+    num_exposures = pvproperty_rbv(name=':NumExposures', value=1, dtype=int)
+    num_images = pvproperty_rbv(name=':NumImages', value=1, dtype=int)
     image_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM,
                             value='Single', enum_strings=['SINGLE', 'MULTIPLE','CONTINUOUS'])
     detector_state = pvproperty(name=':DetectorStateRBV', dtype=ChannelType.ENUM,
@@ -93,7 +92,7 @@ class ImagePlugin(PluginBase):
     manufacturer = pvproperty(name=':Manufacturer_RBV', value='default', read_only=True)
     model = pvproperty(name=':Model_RBV', value='default', read_only=True)
 
-    @acquire.putter
+    @acquire.setpoint.putter
     async def acquire(self, instance, value):
         """
         This is a putter function that steps through the proces required when the 'acquire'
@@ -112,7 +111,7 @@ class ImagePlugin(PluginBase):
 
         return value
 
-    @acquire_time.putter
+    @acquire_time.setpoint.putter
     async def acquire_time(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
@@ -122,7 +121,7 @@ class ImagePlugin(PluginBase):
 
         return value
 
-    @num_exposures.putter
+    @num_exposures.setpoint.putter
     async def num_exposures(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
@@ -132,7 +131,7 @@ class ImagePlugin(PluginBase):
 
         return value
 
-    @num_images.putter
+    @num_images.setpoint.putter
     async def num_images(obj, instance, value):
         """
         This is a putter function that updates num_average when averaging_time is set
@@ -145,7 +144,7 @@ class ImagePlugin(PluginBase):
     # Add some code to start a version of the server if this file is 'run'.
     if __name__ == "__main__":
         ioc_options, run_options = ioc_arg_parser(
-            default_prefix="ImagePlugin",
-            desc=dedent(ImagePlugin.__doc__))
-        ioc = ImagePlugin(**ioc_options)
+            default_prefix="CamPlugin",
+            desc=dedent(CamPlugin.__doc__))
+        ioc = CamPlugin(**ioc_options)
         run(ioc.pvdb, **run_options)
