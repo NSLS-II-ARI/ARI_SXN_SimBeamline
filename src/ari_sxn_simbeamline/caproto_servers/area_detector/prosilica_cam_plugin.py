@@ -16,6 +16,13 @@ class ProsilicaCamPlugin(CamPlugin):
     model = pvproperty(name=':Model_RBV', value='Prosilica', read_only=True,
                        report_as_string=True)
 
+    array_size0 = pvproperty(name=':ArraySizeX_RBV', value=1544, dtype=int,
+                             read_only=True, )
+    array_size1 = pvproperty(name=':ArraySizeY_RBV', value=2064, dtype=int,
+                             read_only=True)
+    array_size2 = pvproperty(name=':ArraySizeZ_RBV', value=1, dtype=int,
+                             read_only=True)
+
 # Add some code to start a version of the server if this file is 'run'.
 if __name__ == "__main__":
     ioc_options, run_options = ioc_arg_parser(

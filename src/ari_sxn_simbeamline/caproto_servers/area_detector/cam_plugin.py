@@ -78,6 +78,12 @@ class CamPlugin(PluginBase):
     array_size2 = pvproperty(name=':ArraySize2_RBV', value=1, dtype=int,
                              read_only=True)
     array_data = pvproperty(name=':ArrayData', dtype=int, max_length=300000)
+    max_size_x = pvproperty(name=':MaxSizeX_RBV', dtype=int, read_only=True)
+    max_size_y = pvproperty(name=':MaxSizeY_RBV', dtype=int, read_only=True)
+    size_x = pvproperty_rbv(name=':SizeX', dtype=int)
+    size_y = pvproperty_rbv(name=':SizeY', dtype=int)
+    reverse_x = pvproperty_rbv(name=':ReverseX', dtype=int)
+    reverse_y = pvproperty_rbv(name=':ReverseY', dtype=int)
 
     # Acquisition properties
     acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
