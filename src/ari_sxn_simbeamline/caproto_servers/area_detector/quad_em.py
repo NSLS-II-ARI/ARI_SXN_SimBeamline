@@ -148,24 +148,24 @@ class QuadEM(PVGroup):
 
     # Add the code that sets new current values when 'acquire' is changed.
     @acquire.putter
-    async def acquire(self, instance, value):
+    async def acquire(obj, instance, value):
         """
         This is a putter function that steps through the proces required when the 'acquire'
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
             start_timestamp = time.time()  # record initial time
-            await self.num_averaged.write(0)  # set the number of averaged points to 0
-            currents = await self._generate_currents()  # calculate the new current values and write out.
-            await self.current1.mean_value.write(currents[0])
-            await self.current2.mean_value.write(currents[1])
-            await self.current3.mean_value.write(currents[2])
-            await self.current4.mean_value.write(currents[3])
+            await obj.num_averaged.write(0)  # set the number of averaged points to 0
+            currents = await obj._generate_currents()  # calculate the new current values and write out.
+            await obj.current1.mean_value.write(currents[0])
+            await obj.current2.mean_value.write(currents[1])
+            await obj.current3.mean_value.write(currents[2])
+            await obj.current4.mean_value.write(currents[3])
             # Make sure that it has taken at least averaging_time to finish
-            while time.time()-start_timestamp < self.averaging_time.readback.value:
+            while time.time()-start_timestamp < obj.averaging_time.readback.value:
                 time.sleep(1E-3)
 
-            await self.num_averaged.write(self.num_average.value)
+            await obj.num_averaged.write(obj.num_average.value)
 
         return 0
 

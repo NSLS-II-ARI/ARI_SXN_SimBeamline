@@ -109,22 +109,24 @@ class CamPlugin(PluginBase):
                        report_as_string=True)
 
     @acquire.setpoint.putter
-    async def acquire(self, instance, value):
+    async def acquire(obj, instance, value):
         """
         This is a putter function that steps through the proces required when the 'acquire'
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
+            await obj.readback.write(1)
             start_timestamp = time.time()  # record initial time
-            await self.parent.array_counter.setpoint.write(0)  # set the number of averaged points to 0
-            image = await self.parent._generate_image()  # calculate the new image.
-            await self.parent.array_data.write(image.flatten())
+            await obj.parent.array_counter.setpoint.write(0)  # set the number of averaged points to 0
+            image = await obj.parent._generate_image()  # calculate the new image.
+            await obj.parent.array_data.write(image.flatten())
             # Make sure that it has taken at least averaging_time to finish
-            while time.time() - start_timestamp < self.parent.acquire_period.readback.value:
+            while time.time() - start_timestamp < obj.parent.acquire_period.readback.value:
                 time.sleep(1E-3)
 
-            await self.parent.array_counter.setpoint.write(self.parent.num_exposures.readback.value)
+            await obj.parent.array_counter.setpoint.write(obj.parent.num_exposures.readback.value)
 
+        await obj.readback.write(0)
         return value
 
     @acquire_time.setpoint.putter
