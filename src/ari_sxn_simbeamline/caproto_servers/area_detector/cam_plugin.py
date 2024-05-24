@@ -3,6 +3,7 @@ from caproto import ChannelType
 from caproto.server import pvproperty, ioc_arg_parser, run
 import numpy as np
 from textwrap import dedent
+import time
 
 class CamPlugin(PluginBase):
     """
@@ -44,8 +45,8 @@ class CamPlugin(PluginBase):
             random integers between 0 and 256.
 
         """
-        image = np.random.randint(0, 257, size=(self.array_size0,
-                                                self.array_size1))
+        image = np.random.randint(0, 257, size=(self.array_size0.value,
+                                                self.array_size1.value))
 
         return image
 
@@ -77,7 +78,7 @@ class CamPlugin(PluginBase):
                              read_only=True)
     array_size2 = pvproperty(name=':ArraySize2_RBV', value=1, dtype=int,
                              read_only=True)
-    array_data = pvproperty(name=':ArrayData', dtype=int, max_length=300000)
+    array_data = pvproperty(name=':ArrayData', dtype=int, max_length=3200000)
     max_size_x = pvproperty(name=':MaxSizeX_RBV', dtype=int, read_only=True)
     max_size_y = pvproperty(name=':MaxSizeY_RBV', dtype=int, read_only=True)
     size_x = pvproperty_rbv(name=':SizeX', dtype=int)
@@ -115,14 +116,14 @@ class CamPlugin(PluginBase):
         """
         if value == 1:
             start_timestamp = time.time()  # record initial time
-            await self.array_counter.write(0)  # set the number of averaged points to 0
-            image = await self._generate_image()  # calculate the new image.
-            await self.array_data.write(image.flatten())
+            await self.parent.array_counter.setpoint.write(0)  # set the number of averaged points to 0
+            image = await self.parent._generate_image()  # calculate the new image.
+            await self.parent.array_data.write(image.flatten())
             # Make sure that it has taken at least averaging_time to finish
-            while time.time() - start_timestamp < self.acquire_period.value:
+            while time.time() - start_timestamp < self.parent.acquire_period.readback.value:
                 time.sleep(1E-3)
 
-            await self.array_counter.write(self.num_exposures)
+            await self.parent.array_counter.setpoint.write(self.parent.num_exposures.readback.value)
 
         return value
 
