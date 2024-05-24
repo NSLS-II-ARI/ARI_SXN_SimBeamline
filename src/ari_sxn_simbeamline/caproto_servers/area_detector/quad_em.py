@@ -84,7 +84,7 @@ class QuadEM(PVGroup):
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
     acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM, value='Single',
                                   enum_strings=['', 'Continuous', 'Single'])
-    acquire = pvproperty(name=':Acquire', dtype=int, value=True)
+    acquire = pvproperty(name=':Acquire', dtype=int, value=0)
     read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
                                  report_as_string=True, value='')
     range = pvproperty_rbv(name=':Range', dtype=str, value='350 pC')
@@ -167,7 +167,7 @@ class QuadEM(PVGroup):
 
             await self.num_averaged.write(self.num_average.value)
 
-        return value
+        return 0
 
     @averaging_time.setpoint.putter
     async def averaging_time(obj, instance, value):
