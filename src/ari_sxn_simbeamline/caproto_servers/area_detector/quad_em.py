@@ -2,7 +2,7 @@ from caproto import ChannelType
 from caproto.server import (pvproperty, PVGroup, SubGroup,
                             ioc_arg_parser, run)
 import math
-from area_detector.image_plugin import ImagePlugin
+from area_detector.cam_plugin import CamPlugin
 from area_detector.plugin_base import PluginBase, pvproperty_rbv
 from area_detector.stats_plugin import StatsPlugin
 import random
@@ -15,11 +15,11 @@ class QuadEM(PVGroup):
     A PV Group that generates the PVs associated with a QuadEM device.
 
     The QuadEM device which this PVGroup simulates is a commonly employed 4 channel
-    electrometer at NSLS-II. In this case passing in this version we randomly update
-    the current values when the device is triggered via setting the 'acquire' PV to
-    1 (see Notes below for details). This is done via the self._generate_current
-    method, to add functionality other than a 'random' current sub-class this class and
-    define a new self._generate_current method.
+    electrometer at NSLS-II. In this version we randomly update the current values
+    when the device is triggered via setting the 'acquire' PV to 1 (see Notes below
+    for details). This is done via the self._generate_current method, to add
+    functionality other than a 'random' current use a sub-class which defines a
+    new self._generate_current method.
 
     NOTES:
     1. Unless otherwise listed in the notes below the PVs generated are 'Dummy' PVs
@@ -55,7 +55,7 @@ class QuadEM(PVGroup):
 
         Returns
         -------
-        currents, [float, float, float, float].
+        currents : [float, float, float, float].
             A list containing four floats which are the updated current values.
         """
 
@@ -83,8 +83,8 @@ class QuadEM(PVGroup):
     model = pvproperty(name=':Model', dtype=str, read_only=True, value='NSLS_EM')
     firmware = pvproperty(name=':Firmware', dtype=str, read_only=True, value='0.1.04.04')
     acquire_mode = pvproperty_rbv(name=':AcquireMode', dtype=ChannelType.ENUM, value='Single',
-                                  enum_strings=['', 'Continuos', 'Single'])
-    acquire = pvproperty(name=':Acquire', dtype=int, value=True)
+                                  enum_strings=['', 'Continuous', 'Single'])
+    acquire = pvproperty(name=':Acquire', dtype=int, value=0)
     read_format = pvproperty_rbv(name=':ReadFormat', dtype=str,
                                  report_as_string=True, value='')
     range = pvproperty_rbv(name=':Range', dtype=str, value='350 pC')
@@ -143,31 +143,31 @@ class QuadEM(PVGroup):
     position_scale_x = pvproperty(name=':PositionScaleX', dtype=float, value=1000000.0)
     position_scale_y = pvproperty(name=':PositionScaleY', dtype=float, value=1000000.0)
 
-    image1 = SubGroup(ImagePlugin, prefix=":image1")
+    image1 = SubGroup(CamPlugin, prefix=":image1")
     sum_all = SubGroup(StatsPlugin, prefix=":SumAll")
 
     # Add the code that sets new current values when 'acquire' is changed.
     @acquire.putter
-    async def acquire(self, instance, value):
+    async def acquire(obj, instance, value):
         """
         This is a putter function that steps through the proces required when the 'acquire'
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
             start_timestamp = time.time()  # record initial time
-            await self.num_averaged.write(0)  # set the number of averaged points to 0
-            currents = await self._generate_currents()  # calculate the new current values and write out.
-            await self.current1.mean_value.write(currents[0])
-            await self.current2.mean_value.write(currents[1])
-            await self.current3.mean_value.write(currents[2])
-            await self.current4.mean_value.write(currents[3])
+            await obj.num_averaged.write(0)  # set the number of averaged points to 0
+            currents = await obj._generate_currents()  # calculate the new current values and write out.
+            await obj.current1.mean_value.write(currents[0])
+            await obj.current2.mean_value.write(currents[1])
+            await obj.current3.mean_value.write(currents[2])
+            await obj.current4.mean_value.write(currents[3])
             # Make sure that it has taken at least averaging_time to finish
-            while time.time()-start_timestamp < self.averaging_time.readback.value:
+            while time.time()-start_timestamp < obj.averaging_time.readback.value:
                 time.sleep(1E-3)
 
-            await self.num_averaged.write(self.num_average.value)
+            await obj.num_averaged.write(obj.num_average.value)
 
-        return value
+        return 0
 
     @averaging_time.setpoint.putter
     async def averaging_time(obj, instance, value):
