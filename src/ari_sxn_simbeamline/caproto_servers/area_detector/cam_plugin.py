@@ -127,7 +127,7 @@ class CamPlugin(PluginBase):
             await obj.parent.array_counter.setpoint.write(obj.parent.num_exposures.readback.value)
 
         await obj.readback.write(0)
-        return value
+        return 0
 
     @acquire_time.setpoint.putter
     async def acquire_time(obj, instance, value):
