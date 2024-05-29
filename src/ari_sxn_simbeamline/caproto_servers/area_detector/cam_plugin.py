@@ -115,6 +115,7 @@ class CamPlugin(PluginBase):
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
+            await instance.write(1, verify_value=False)
             await obj.readback.write(1)
             start_timestamp = time.time()  # record initial time
             await obj.parent.array_counter.setpoint.write(0)  # set the number of averaged points to 0
