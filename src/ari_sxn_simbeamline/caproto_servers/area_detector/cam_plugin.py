@@ -87,7 +87,7 @@ class CamPlugin(PluginBase):
     reverse_y = pvproperty_rbv(name=':ReverseY', dtype=int)
 
     # Acquisition properties
-    acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
+    acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=0)
     acquire_time = pvproperty_rbv(name=':AcquireTime', value=0.1, dtype=float)
     acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float)
     num_exposures = pvproperty_rbv(name=':NumExposures', value=1, dtype=int)
