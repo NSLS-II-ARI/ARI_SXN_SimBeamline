@@ -87,7 +87,7 @@ class CamPlugin(PluginBase):
     reverse_y = pvproperty_rbv(name=':ReverseY', dtype=int)
 
     # Acquisition properties
-    acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=True)
+    acquire = pvproperty_rbv(name=':Acquire', dtype=int, value=0)
     acquire_time = pvproperty_rbv(name=':AcquireTime', value=0.1, dtype=float)
     acquire_period = pvproperty_rbv(name=':AcquirePeriod', value=0.1, dtype=float)
     num_exposures = pvproperty_rbv(name=':NumExposures', value=1, dtype=int)
@@ -115,6 +115,7 @@ class CamPlugin(PluginBase):
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
+            await instance.write(1, verify_value=False)
             await obj.readback.write(1)
             start_timestamp = time.time()  # record initial time
             await obj.parent.array_counter.setpoint.write(0)  # set the number of averaged points to 0
@@ -127,7 +128,7 @@ class CamPlugin(PluginBase):
             await obj.parent.array_counter.setpoint.write(obj.parent.num_exposures.readback.value)
 
         await obj.readback.write(0)
-        return value
+        return 0
 
     @acquire_time.setpoint.putter
     async def acquire_time(obj, instance, value):

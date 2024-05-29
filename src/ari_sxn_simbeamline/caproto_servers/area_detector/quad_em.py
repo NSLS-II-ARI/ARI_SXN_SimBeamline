@@ -154,6 +154,7 @@ class QuadEM(PVGroup):
         PV is set to 1. If it is set to 0 it just sets itself to 0.
         """
         if value == 1:
+            await instance.write(1, verify_value=False)
             start_timestamp = time.time()  # record initial time
             await obj.num_averaged.write(0)  # set the number of averaged points to 0
             currents = await obj._generate_currents()  # calculate the new current values and write out.
