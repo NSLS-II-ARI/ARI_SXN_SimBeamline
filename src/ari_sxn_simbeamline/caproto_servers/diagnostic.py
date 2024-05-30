@@ -1,5 +1,7 @@
+from area_detector.quad_em import QuadEM
+from area_detector.prosilica import Prosilica
 from caproto.ioc_examples.fake_motor_record import FakeMotor
-from caproto.server import PVGroup, SubGroup, pvproperty, ioc_arg_parser, run
+from caproto.server import PVGroup, SubGroup, ioc_arg_parser, run
 from textwrap import dedent
 
 
@@ -32,11 +34,11 @@ class Diagnostic(PVGroup):
                          user_limits=(-1, 20), tick_rate_hz=10.,
                          prefix=':yag_trans')
 
-    # Add the photodiode PVs
-    photodiode = pvproperty(value=3E-6, name=':photodiode', read_only=True)
+    # Add the photodiode electrometer PVs
+    currents = SubGroup(QuadEM, prefix=':Currents')
 
-    # TODO: Add the camera Areadetector PV.
-    # camera = .........
+    # Add the camera PVs
+    camera = SubGroup(Prosilica, prefix=':Camera')
 
 
 # Add some code to start a version of the server if this file is 'run'.

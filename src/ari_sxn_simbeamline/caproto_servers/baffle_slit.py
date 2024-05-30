@@ -1,6 +1,6 @@
+from area_detector.quad_em import QuadEM
 from caproto.ioc_examples.fake_motor_record import FakeMotor
 from caproto.server import PVGroup, SubGroup, ioc_arg_parser, run
-from area_detector.quad_em import QuadEM
 from textwrap import dedent
 
 
