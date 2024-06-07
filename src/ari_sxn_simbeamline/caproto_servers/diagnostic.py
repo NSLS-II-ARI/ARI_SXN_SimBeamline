@@ -26,11 +26,11 @@ class Diagnostic(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the motor PVs
-    multi_trans = SubGroup(FakeMotor, velocity=0.1, acceleration=1.0,
+    multi_trans = SubGroup(FakeMotor, velocity=1, acceleration=1.0,
                            user_limits=(-1, 20), tick_rate_hz=10.,
                            prefix=':multi_trans')
 
-    yag_trans = SubGroup(FakeMotor, velocity=0.1, acceleration=1.0,
+    yag_trans = SubGroup(FakeMotor, velocity=1, acceleration=1.0,
                          user_limits=(-1, 20), tick_rate_hz=10.,
                          prefix=':yag_trans')
 
