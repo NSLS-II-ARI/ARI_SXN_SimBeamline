@@ -26,9 +26,11 @@ class Diagnostic(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the motor PVs
-    multi_trans = SubGroup(FakeMotor, velocity=5, precision = 3, user_limits = (-125, 25), prefix=':multi_trans')
+    multi_trans = SubGroup(FakeMotor, velocity=5, precision = 3,
+                           user_limits = (-125, 25), prefix=':multi_trans')
 
-    yag_trans = SubGroup(FakeMotor, velocity=5, precision = 3, user_limits = (-25, 25), prefix=':yag_trans')
+    yag_trans = SubGroup(FakeMotor, velocity=5, precision = 3,
+                         user_limits = (-25, 25), prefix=':yag_trans')
 
     # Add the photodiode electrometer PVs
     currents = SubGroup(QuadEM, prefix=':Currents')
