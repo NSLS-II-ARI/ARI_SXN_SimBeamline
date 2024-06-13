@@ -24,10 +24,14 @@ class BaffleSlit(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the baffle motor PVs.
-    top = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20), prefix=':Top')
-    bottom = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-20, 1), prefix=':Bottom')
-    inboard = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-20, 1), prefix=':Inboard')
-    outboard = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20), prefix=':Outboard')
+    top = SubGroup(FakeMotor, velocity=1, precision=3,
+                   user_limits=(-13, 40), prefix=':Top')
+    bottom = SubGroup(FakeMotor, velocity=1, precision=3,
+                      user_limits=(-40, 13), prefix=':Bottom')
+    inboard = SubGroup(FakeMotor, velocity=1, precision=3,
+                       user_limits=(-40, 13), prefix=':Inboard')
+    outboard = SubGroup(FakeMotor, velocity=1, precision=3,
+                        user_limits=(-13, 40), prefix=':Outboard')
 
     currents = SubGroup(QuadEM, prefix=':Currents')
 
