@@ -19,14 +19,7 @@ class AriM1(PVGroup):
      as well as the related vacuum component PVs.
 
     TODO:
-    1. Decide if we want to have this include the baffleslit and diagnostic
-       components as well:
-        - This may help create a cohesive connection between them but also blurs
-          the lines between vacuum sections and physical devices.
-    2. Add the vacuum component (gauges, pumps, valves, ....).
-        - Temporary read only PVs have been created but I need to see what other
-         PVs are associated with this hardware that we may want to simulate.
-    3. Decide how we want to implement the motor-record PVs.
+    1. Decide how we want to implement the motor-record PVs.
         - Currently I use the FakeMotor PVGroup from the caproto source code,
         this does not have all of the required PVs for a motor record and so
         will need to be replaced.
