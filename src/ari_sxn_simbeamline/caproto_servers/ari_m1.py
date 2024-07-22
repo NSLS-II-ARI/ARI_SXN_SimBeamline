@@ -6,6 +6,7 @@ from baffle_slit import BaffleSlit
 from caproto.ioc_examples.fake_motor_record import FakeMotor
 from caproto.server import PVGroup, SubGroup, pvproperty, ioc_arg_parser, run
 from diagnostic import Diagnostic
+from nslsii.iocs.eps_two_state_ioc_sim import EPSTwoStateIOC
 from textwrap import dedent
 
 
@@ -61,6 +62,7 @@ class AriM1(PVGroup):
     ccg = pvproperty(value=3E-10, name=':ccg', read_only=True)
     tcg = pvproperty(value=1E-4, name=':tcg', read_only=True)
     ip = pvproperty(value=4E-10, name=':ip', read_only=True)
+    gv = SubGroup(EPSTwoStateIOC, prefix=':gv:')
 
     # Add the baffle slit PVs.
     baffle = SubGroup(BaffleSlit, prefix=':baffle')
