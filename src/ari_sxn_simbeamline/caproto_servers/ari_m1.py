@@ -1,6 +1,6 @@
 """
-This file will contain some generic caproto PVGroups used to generate the beamline
-Caproto IOC servers
+This file will contain some generic caproto PVGroups used to generate the
+beamline Caproto IOC servers
 """
 from baffle_slit import BaffleSlit
 from caproto.ioc_examples.fake_motor_record import FakeMotor
@@ -14,9 +14,9 @@ class AriM1(PVGroup):
     """
     A PVGroup that generates the PVs associated with the ARI M1 mirror system.
 
-    This class should be used to define the M1 mirror system PVs for the ARI beamline.
-    It will consist of PVs for each of the motors for each mirror axis as well as the
-    related vacuum component PVs.
+    This class should be used to define the M1 mirror system PVs for the ARI
+    beamline. It will consist of PVs for each of the motors for each mirror axis
+     as well as the related vacuum component PVs.
 
     TODO:
     1. Decide if we want to have this include the baffleslit and diagnostic
@@ -24,16 +24,16 @@ class AriM1(PVGroup):
         - This may help create a cohesive connection between them but also blurs
           the lines between vacuum sections and physical devices.
     2. Add the vacuum component (gauges, pumps, valves, ....).
-        - Temporary read only PVs have been created but I need to see what other PVs
-        are associated with this hardware that we may want to simulate.
+        - Temporary read only PVs have been created but I need to see what other
+         PVs are associated with this hardware that we may want to simulate.
     3. Decide how we want to implement the motor-record PVs.
-        - Currently I use the FakeMotor PVGroup from the caproto source code, this
-        does not have all of the required PVs for a motor record and so will need
-        to be replaced.
-        - Options I think are: 1, to use the C++ based Epics motor record simulated
-        IOC or 2, to write our own Epics motor record IOC in caproto with only the
-        minimum required Epics PVs for our applications (see motor record ophyd device
-        for required PVs).
+        - Currently I use the FakeMotor PVGroup from the caproto source code,
+        this does not have all of the required PVs for a motor record and so
+        will need to be replaced.
+        - Options I think are: 1, to use the C++ based Epics motor record
+        simulated IOC or 2, to write our own Epics motor record IOC in caproto
+        with only the minimum required Epics PVs for our applications (see motor
+         record ophyd device for required PVs).
 
     Parameters
     ----------
@@ -47,10 +47,10 @@ class AriM1(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the mirror motor PVs.
-    Ry_coarse = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
-                         prefix=':Ry_coarse')
-    Ry_fine = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
-                       prefix=':Ry_fine')
+    Ry_coarse = SubGroup(FakeMotor, velocity=0.1, precision=3,
+                         user_limits=(-1, 20), prefix=':Ry_coarse')
+    Ry_fine = SubGroup(FakeMotor, velocity=0.1, precision=3,
+                       user_limits=(-1, 20), prefix=':Ry_fine')
     Rz = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
                   prefix=':Rz')
     x = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
