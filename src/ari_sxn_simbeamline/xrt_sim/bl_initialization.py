@@ -6,7 +6,7 @@ nickel = xrt_material.Material('Ni', rho=8.908, table='Chantler Total', kind='mi
 genericGR = xrt_material.Material('Ni', rho=8.908, table='Chantler total', kind='grating',
                         name='generic grating', efficiency=[(1, 1), (-1, 1)])  # efficiency = 1
 
-def BLparams(update_para=None):
+def BLparams():
     '''Initialize the beamline parameters!
 
     1. blG is a dictionary containing all parameters for beamline simulation.
@@ -29,12 +29,9 @@ def BLparams(update_para=None):
     blG['VsltSz'] = 10
 
     ############################################################################
-    if update_para == None:
-        for k,v in update_para.items():
-            blG[k] = v
-    ############################################################################
     # M1 details
     blG['rM1'] = [0, blG['dSrcToM1'], 0] # M1 local coordinate
+    # blG['rM1'] = [0, 58792, 0] # M1 local coordinate
 
     gold = xrt_material.Material('Au', rho=19.3, table='Chantler Total',
                                  kind='mirror', name='Au')
