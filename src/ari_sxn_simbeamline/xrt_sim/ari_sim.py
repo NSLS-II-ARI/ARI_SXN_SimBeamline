@@ -557,10 +557,29 @@ class ID29Screen(xrt_screen.Screen):
 
 class AriModel:
     """
-    The beamline simulation for ARI beamline!
+    The ARI beamline simulation based on XRT.
+
+    This class simulates the beam propagation along the ARI beamline and gives
+    the beam properties from each beamline component.
+
+    Parameters
+    ----------
+    photon_energy : argument,specify an initial photon energy for the simulation
+
+    polarization: argument, specify the polarization for simulation.
+
+    Attributes
+    ----------
+    *attrs : many
+
+    Methods
+    -------
+    *methods : many
+
     """
-    # def __init__(self, update_comp=None):
-    #     self.update_comp = update_comp
+
+    def __init__(self, update_comp=None):
+        self.update_comp = update_comp
 
     ###############################################
     blG = BLparams()
@@ -574,14 +593,14 @@ class AriModel:
 
     source = ID29Source(bl=bl,
                         name='GeoSrc',
-                        center=(0, 0, 0), # source position
+                        center=(0, 0, 0),  # source position
                         nrays=10000,
-                        distx='normal', dx=0.30, # source linear profile
+                        distx='normal', dx=0.30,  # source linear profile
                         disty=None, dy=0,
                         distz='normal', dz=0.001,
-                        distxprime='normal', dxprime=0.0001, # source angular profile
+                        distxprime='normal', dxprime=0.0001,  # source angular profile
                         distzprime='normal', dzprime=0.01,
-                        distE='normal', energies=(energy_ref, energy_sigma), # source energy profile
+                        distE='normal', energies=(energy_ref, energy_sigma),  # source energy profile
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False)
@@ -600,7 +619,8 @@ class AriModel:
                 upstream=source,
                 deflection='inboard')  # optics is defined in the material!!!
     m1.activate(updated=True)
-
+    ###############################################
+    # Add the M2 to beamline object bl
     m2 = ID29OE(bl=bl,
                 name='M2',
                 center=blG['rM1'],
@@ -652,103 +672,3 @@ class AriModel:
     #         self.m1.activate(updated=True)
     #     elif self.update_comp == 'm1':
     #         self.m1.activate(updated=True)
-
-
-
-
-
-
-# conda active
-
-#
-# def AriModel_func():
-#     """
-#     The beamline simulation for ARI beamline!
-#
-#     update_para is a dictionary containing the parameters that are modified
-#     comparing to their initial values.
-#     """
-#     blG = BLparams()
-#     ###############################################
-#     # Initialize the beamline object
-#     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
-#     ###############################################
-#     # Add the source to beamline object bl
-#     energy_ref = 850.0  # eV
-#     energy_sigma = 5.0  # eV
-#
-#     xrt_source.GeometricSource(bl=bl,
-#                                name='GeoSrc',
-#                                center=(0, 0, 0), # source position
-#                                nrays=10000,
-#                                distx='normal', dx=0.30, # source linear profile
-#                                disty=None, dy=0,
-#                                distz='normal', dz=0.001,
-#                                distxprime='normal', dxprime=0.0001, # source angular profile
-#                                distzprime='normal', dzprime=0.01,
-#                                distE='normal', energies=(energy_ref, energy_sigma), # source energy profile
-#                                polarization='horizontal',
-#                                filamentBeam=False,
-#                                uniformRayDensity=False)
-#
-#     ###############################################
-#     # Add the M1 to beamline object bl
-#     m1 = ID29OE(bl=bl,
-#                name='M1',
-#                center=blG['rM1'],
-#                yaw=blG['yawM1xrt'], roll=blG['rolM1xrt'], pitch=blG['pitM1xrt'],
-#                # positionRoll=np.pi/2,
-#                material=blG['matM1'],
-#                limPhysX=blG['XphysSzM1'], limOptX=blG['XoptSzM1'],
-#                limPhysY=blG['YphysSzM1'], limOptY=blG['YoptSzM1'],
-#                shape='rect',
-#                beamIn = bl.sources[0].shine())  # optics is defined in the material!!!
-#     m1.update()
-#
-#     m2 = ID29OE(bl=bl,
-#                name='M2',
-#                center=blG['rM1'],
-#                yaw=blG['yawM1xrt'], roll=0.002, pitch=blG['pitM1xrt'],
-#                # positionRoll=np.pi/2,
-#                material=blG['matM1'],
-#                limPhysX=blG['XphysSzM1'],
-#                limPhysY=blG['YphysSzM1'],
-#                shape='rect',
-#                beamIn=m1.beamOutgl)  # optics is defined in the material!!!
-#     m2.update()
-#     ###############################################
-#     # Add the M1 Baffle slit to beamline object bl
-#     slit1 = ID29Aperture(bl=bl,
-#                          name='M1Baff_slit',
-#                          center=[0,57234,0], # blG['rSrctoM1Baff']
-#                          x='auto', z='auto',  # what are these x and z???
-#                          kind=['left', 'right', 'bottom', 'top'],
-#                          opening=[-blG['HsltSz'] / 2, blG['HsltSz'] / 2,
-#                                   -blG['VsltSz'] / 2, blG['VsltSz'] / 2],
-#                           beamIn=m2.beamOutgl)
-#     slit1.update()
-#     ###############################################
-#     # Add another slit at M1 diagnostic to block beam when diagnostic unit is in
-#     slit2 = ID29Aperture(bl=bl,
-#                          name='M1Diag_slit',
-#                          center=blG['rSrcM1Diag'],
-#                          x='auto', z='auto',  # what are these x and z???
-#                          kind=['left', 'right', 'bottom', 'top'],
-#                          opening=[-50,50,-50,50.0],
-#                          beamIn=slit1.beamOut)
-#     slit2.update()
-#     ###############################################
-#     # Add one screen at M1 diagnostic to monitor the beam
-#     screen1 = ID29Screen(bl=bl,
-#                       name='M1Diag_Scrn',
-#                       center=blG['rSrcM1Diag'],
-#                       x=np.array([1, 0, 0]),
-#                       z=np.array([0, 0, 1]),
-#                       beamIn=slit2.beamOut)
-#
-#     return bl
-#
-#
-#
-#
-#
