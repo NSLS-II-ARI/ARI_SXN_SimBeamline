@@ -1,17 +1,13 @@
 import numpy as np
-# import matplotlib.pyplot as plt
-# from time import strftime
 
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.sources as xrt_source
 import xrt.backends.raycing.apertures as xrt_aperture
 import xrt.backends.raycing.screens as xrt_screen
 import xrt.backends.raycing.oes as xrt_oes
-# import xrt.backends.raycing.materials as xrt_material
 
 from bl_initialization import BLparams
 
-#################################################################
 
 class ID29Source(xrt_source.GeometricSource):
     """
@@ -94,7 +90,7 @@ class ID29Source(xrt_source.GeometricSource):
         if update != None:
             for pv_name, pv_val in update.items():
                 if pv_name.split(':')[1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy() # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                    center_list = getattr(self, 'center').copy()
 
                     # Find out the position of changed element based on the
                     # coordination transformation between NSLS2 and XRT
@@ -108,7 +104,7 @@ class ID29Source(xrt_source.GeometricSource):
                     center_list[int(np.where(unit_vector_trans_XRT!=0)[0][0])] = (
                             pv_val * unit_vector_trans_XRT[int(np.where(unit_vector_trans_XRT!=0)[0][0])])
                     if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list) # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                        setattr(self, 'center', center_list)
                         updated = True
 
                 elif pv_name.split(':')[1][:2] in ['Rx', 'Ry', 'Rz']:
@@ -218,7 +214,7 @@ class ID29OE(xrt_oes.OE):
         Parameters
         ----------
         update: a dict wrapping up the PV names and values,
-                update = {'ARI_M2:Ry_fine':0.2}.
+                update = {'ARI_M2:x': 0.2, 'ARI_M1:Ry_fine': 3.1}.
 
         updated: a boolean, i.e., False (by default) or True.
         The Ture means the outcome of Beam Object needs to be updated
@@ -231,12 +227,10 @@ class ID29OE(xrt_oes.OE):
             indicates a re-activation required.
         '''
 
-        # update = {'ARI_M2:x': 0.2}
         if update != None:
-            # update = {'ARI_M2:x': 0.2, 'ARI_M1:Ry_fine': 3.1}
             for pv_name, pv_val in update.items():
                 if pv_name.split(':')[1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy() # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                    center_list = getattr(self, 'center').copy()
 
                     # Find out the position of changed element based on the
                     # coordination transformation between NSLS2 and XRT
@@ -250,7 +244,7 @@ class ID29OE(xrt_oes.OE):
                     center_list[int(np.where(unit_vector_trans_XRT!=0)[0][0])] = (
                             pv_val * unit_vector_trans_XRT[int(np.where(unit_vector_trans_XRT!=0)[0][0])])
                     if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list) # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                        setattr(self, 'center', center_list)
                         updated = True
                 elif pv_name.split(':')[1][:2] in ['Rx', 'Ry', 'Rz']:
                     angle_XRT = np.array(['pitch', 'roll', 'yaw'])
@@ -382,11 +376,11 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
             indicates a re-activation required.
 
         '''
-        # update = {'ARI_M1:diag:outboard':2.3}
+
         if update != None:
             for pv_name, pv_val in update.items():
                 if pv_name.split(':')[-1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy() # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                    center_list = getattr(self, 'center').copy()
 
                     # Find out the position of changed element based on the
                     # coordination transformation between NSLS2 and XRT
@@ -400,7 +394,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                     center_list[int(np.where(unit_vector_trans_XRT!=0)[0][0])] = (
                             pv_val * unit_vector_trans_XRT[int(np.where(unit_vector_trans_XRT!=0)[0][0])])
                     if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list) # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                        setattr(self, 'center', center_list)
                         updated = True
 
                 elif pv_name.split(':')[-1] in ['top', 'bottom', 'inboard', 'outboard']:
@@ -525,7 +519,7 @@ class ID29Screen(xrt_screen.Screen):
         if update != None:
             for pv_name, pv_val in update.items():
                 if pv_name.split(':')[-1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy() # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                    center_list = getattr(self, 'center').copy()
 
                     # Find out the position of changed element based on the
                     # coordination transformation between NSLS2 and XRT
@@ -539,7 +533,7 @@ class ID29Screen(xrt_screen.Screen):
                     center_list[int(np.where(unit_vector_trans_XRT!=0)[0][0])] = (
                             pv_val * unit_vector_trans_XRT[int(np.where(unit_vector_trans_XRT!=0)[0][0])])
                     if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list) # self.pv2xrt[pv_name.split(':')[0]][pv_name]
+                        setattr(self, 'center', center_list)
                         updated = True
                 else:
                     if getattr(self, self.pv2xrt[pv_name.split(':')[0]][pv_name]) != pv_val:
@@ -562,11 +556,12 @@ class AriModel:
     This class simulates the beam propagation along the ARI beamline and gives
     the beam properties from each beamline component.
 
+    TODO:
+    The update method will be constructed in the integration with Caproto IOC.
+
     Parameters
     ----------
-    photon_energy : argument,specify an initial photon energy for the simulation
-
-    polarization: argument, specify the polarization for simulation.
+    update_comp : argument, passed to the update method.
 
     Attributes
     ----------
@@ -581,16 +576,14 @@ class AriModel:
     def __init__(self, update_comp=None):
         self.update_comp = update_comp
 
-    ###############################################
     blG = BLparams()
-    ###############################################
+
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
-    ###############################################
+
     # Add the source to beamline object bl
     energy_ref = 850.0  # eV
     energy_sigma = 5.0  # eV
-
     source = ID29Source(bl=bl,
                         name='GeoSrc',
                         center=(0, 0, 0),  # source position
@@ -605,7 +598,7 @@ class AriModel:
                         filamentBeam=False,
                         uniformRayDensity=False)
     source.activate(updated=True)
-    ###############################################
+
     # Add the M1 to beamline object bl
     m1 = ID29OE(bl=bl,
                 name='M1',
@@ -619,7 +612,7 @@ class AriModel:
                 upstream=source,
                 deflection='inboard')  # optics is defined in the material!!!
     m1.activate(updated=True)
-    ###############################################
+
     # Add the M2 to beamline object bl
     m2 = ID29OE(bl=bl,
                 name='M2',
@@ -633,7 +626,7 @@ class AriModel:
                 upstream=m1,
                 deflection='outboard')  # optics is defined in the material!!!
     m2.activate(updated=True)
-    ###############################################
+
     # Add the M1 Baffle slit to beamline object bl
     slit1 = ID29Aperture(bl=bl,
                          name='M1Baff_slit',
@@ -644,7 +637,7 @@ class AriModel:
                                   -blG['VsltSz'] / 2, blG['VsltSz'] / 2],
                          upstream=m2)
     slit1.activate(updated=True)
-    ###############################################
+
     # Add another slit at M1 diagnostic to block beam when diagnostic unit is in
     slit2 = ID29Aperture(bl=bl,
                          name='M1Diag_slit',
@@ -654,7 +647,7 @@ class AriModel:
                          opening=[-50,50,-50,50.0],
                          upstream=slit1)
     slit2.activate(updated=True)
-    ###############################################
+
     # Add one screen at M1 diagnostic to monitor the beam
     screen1 = ID29Screen(bl=bl,
                          name='M1Diag_Scrn',
@@ -665,7 +658,8 @@ class AriModel:
     screen1.activate(updated=True)
 
 
-    #
+    # The update method needs to be constructed during the integration with Caproto IOC.
+
     # def update(self):
     #     if self.update_comp is None:
     #         self.source.activate(updated=True)

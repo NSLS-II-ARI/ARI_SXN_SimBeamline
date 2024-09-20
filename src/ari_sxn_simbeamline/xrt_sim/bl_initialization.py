@@ -18,7 +18,7 @@ def BLparams():
         and the angle is in the unit of radian.
     '''
     blG = dict()
-    ############################################################################
+
     # Initialize all basic parameters for beamline simulation
     blG['dSrcToM1'] = 27850
     blG['dSrctoM1Baff'] = 31094.5
@@ -28,7 +28,7 @@ def BLparams():
     blG['HsltSz'] = 10
     blG['VsltSz'] = 10
 
-    ############################################################################
+
     # M1 details
     blG['rM1'] = [0, blG['dSrcToM1'], 0] # M1 local coordinate
     # blG['rM1'] = [0, 58792, 0] # M1 local coordinate
@@ -46,7 +46,7 @@ def BLparams():
     blG['XoptSzM1']=[-optW/2,optW/2]; blG['XphysSzM1']=blG['XoptSzM1']
     blG['YoptSzM1']=[-optL/2,optL/2]; blG['YphysSzM1']=blG['YoptSzM1']
 
-    ############################################################################
+
     blG['rSrcM1Diag'] = [0, blG['dSrctoM1Diag'], 0]
 
     blG['rScrXslt'] = [0, blG['dSrctoM1Baff'], 0]
