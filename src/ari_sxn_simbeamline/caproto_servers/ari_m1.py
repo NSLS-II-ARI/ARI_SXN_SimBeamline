@@ -40,15 +40,16 @@ class AriM1(PVGroup):
         super().__init__(*args, **kwargs)  # call the PVGroup __init__ function
 
     # Add the mirror motor PVs.
-    Ry_coarse = SubGroup(FakeMotor, velocity=0.1, precision=3,
+
+    Ry_coarse = SubGroup(FakeMotor, velocity=1, precision=3,
                          user_limits=(-1, 20), prefix=':Ry_coarse')
     Ry_fine = SubGroup(FakeMotor, velocity=0.1, precision=3,
                        user_limits=(-1, 20), prefix=':Ry_fine')
-    Rz = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
+    Rz = SubGroup(FakeMotor, velocity=1, precision=3, user_limits=(-1, 20),
                   prefix=':Rz')
-    x = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
+    x = SubGroup(FakeMotor, velocity=1, precision=3, user_limits=(-1, 20),
                  prefix=':x')
-    y = SubGroup(FakeMotor, velocity=0.1, precision=3, user_limits=(-1, 20),
+    y = SubGroup(FakeMotor, velocity=1, precision=3, user_limits=(-1, 20),
                  prefix=':y')
 
     # Add the mirror chamber vacuum PVs.
