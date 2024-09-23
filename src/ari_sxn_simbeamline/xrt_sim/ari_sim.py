@@ -557,7 +557,7 @@ class AriModel:
     the beam properties from each beamline component.
 
     TODO:
-    The update method will be constructed in the integration with Caproto IOC.
+    One update method will be constructed in the integration with Caproto IOC.
 
     Parameters
     ----------
@@ -658,11 +658,3 @@ class AriModel:
     screen1.activate(updated=True)
 
 
-    # The update method needs to be constructed during the integration with Caproto IOC.
-
-    # def update(self):
-    #     if self.update_comp is None:
-    #         self.source.activate(updated=True)
-    #         self.m1.activate(updated=True)
-    #     elif self.update_comp == 'm1':
-    #         self.m1.activate(updated=True)
