@@ -8,6 +8,16 @@ import xrt.backends.raycing.oes as xrt_oes
 
 from bl_initialization import BLparams
 
+# Transformation of coordinates between XRT and NSLS-II.
+_coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
+                                             [-1.0, 0, 0]]),
+                        'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
+                                              [1.0, 0, 0]]),
+                        'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
+                                              [0, -1.0, 0]]),
+                        'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
+                                            [0, 1.0, 0]])}
+
 
 class ID29Source(xrt_source.GeometricSource):
     """
@@ -57,16 +67,6 @@ class ID29Source(xrt_source.GeometricSource):
 
         self.pv2xrt = {'ARI_pgm': _source_pv2xrt}
 
-    # Transformation of coordinates between XRT and NSLS-II.
-    coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
-                                                [-1.0, 0, 0]]),
-                           'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
-                                                 [1.0, 0, 0]]),
-                           'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
-                                                 [0, -1.0, 0]]),
-                           'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
-                                               [0, 1.0, 0]])}
-
     def activate(self, update=None, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -102,8 +102,7 @@ class ID29Source(xrt_source.GeometricSource):
                         if pv_name.split(':')[1] == p:
                             unit_vector_trans_NSLS2[i] = 1.0
                     unit_vector_trans_XRT = np.dot(
-                        self.coordinate_NSLS2XRT['upward'],
-                        unit_vector_trans_NSLS2)
+                        _coordinate_NSLS2XRT['upward'], unit_vector_trans_NSLS2)
 
                     center_list[int(np.where(unit_vector_trans_XRT != 0
                                              )[0][0])] = \
@@ -121,8 +120,7 @@ class ID29Source(xrt_source.GeometricSource):
                         if pv_name.split(':')[1][:2] == p:
                             unit_vector_angle_NSLS2[i] = 1.0
                     unit_vector_angle_XRT = np.dot(
-                        self.coordinate_NSLS2XRT['upward'],
-                        unit_vector_angle_NSLS2)
+                        _coordinate_NSLS2XRT['upward'], unit_vector_angle_NSLS2)
 
                     angle_set_v = pv_val * unit_vector_angle_XRT[
                         int(np.where(unit_vector_angle_XRT != 0)[0][0])]
@@ -212,16 +210,6 @@ class ID29OE(xrt_oes.OE):
 
         self.pv2xrt = {'ARI_M1': _M1_pv2xrt, 'ARI_M2': _M2_pv2xrt}
 
-    # Transformation of coordinates between XRT and NSLS-II.
-    coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
-                                                [-1.0, 0, 0]]),
-                           'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
-                                                 [1.0, 0, 0]]),
-                           'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
-                                                 [0, -1.0, 0]]),
-                           'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
-                                               [0, 1.0, 0]])}
-
     def activate(self, update=None, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -256,9 +244,9 @@ class ID29OE(xrt_oes.OE):
                     for i, p in enumerate(['x', 'y', 'z']):
                         if pv_name.split(':')[1] == p:
                             unit_vector_trans_NSLS2[i] = 1.0
-                    unit_vector_trans_XRT = np.dot(self.coordinate_NSLS2XRT[
-                                                       self.deflection],
-                                                   unit_vector_trans_NSLS2)
+                    unit_vector_trans_XRT = np.dot(
+                        _coordinate_NSLS2XRT[self.deflection],
+                        unit_vector_trans_NSLS2)
 
                     center_list[int(np.where(
                         unit_vector_trans_XRT != 0)[0][0])] = (
@@ -274,9 +262,9 @@ class ID29OE(xrt_oes.OE):
                     for i, p in enumerate(['Rx', 'Ry', 'Rz']):
                         if pv_name.split(':')[1][:2] == p:
                             unit_vector_angle_NSLS2[i] = 1.0
-                    unit_vector_angle_XRT = np.dot(self.coordinate_NSLS2XRT[
-                                                       self.deflection],
-                                                   unit_vector_angle_NSLS2)
+                    unit_vector_angle_XRT = np.dot(
+                        _coordinate_NSLS2XRT[self.deflection],
+                        unit_vector_angle_NSLS2)
 
                     angle_set_v = pv_val * unit_vector_angle_XRT[int(
                         np.where(unit_vector_angle_XRT != 0)[0][0])]
@@ -373,16 +361,6 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                        'ARI_M1:diag': _m1_diag_pv2xrt,
                        'ARI_M2:baffle': _m2_baff_pv2xrt}
 
-    # Transformation of coordinates between XRT and NSLS-II.
-    coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
-                                                [-1.0, 0, 0]]),
-                           'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
-                                                 [1.0, 0, 0]]),
-                           'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
-                                                 [0, -1.0, 0]]),
-                           'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
-                                               [0, 1.0, 0]])}
-
     def activate(self, update=None, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -421,8 +399,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                         if pv_name.split(':')[-1] == p:
                             unit_vector_trans_NSLS2[i] = 1.0
                     unit_vector_trans_XRT = np.dot(
-                        self.coordinate_NSLS2XRT['upward'],
-                        unit_vector_trans_NSLS2)
+                        _coordinate_NSLS2XRT['upward'], unit_vector_trans_NSLS2)
 
                     center_list[int(np.where(
                         unit_vector_trans_XRT != 0)[0][0])] = (
@@ -523,16 +500,6 @@ class ID29Screen(xrt_screen.Screen):
 
         self.pv2xrt = {'ARI_M1:Screen': _m1_screen_pv2xrt}
 
-    # Transformation of coordinates between XRT and NSLS-II.
-    coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
-                                                [-1.0, 0, 0]]),
-                           'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
-                                                 [1.0, 0, 0]]),
-                           'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
-                                                 [0, -1.0, 0]]),
-                           'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
-                                               [0, 1.0, 0]])}
-
     def activate(self, update=None, updated=False):
         """
 
@@ -572,8 +539,7 @@ class ID29Screen(xrt_screen.Screen):
                         if pv_name.split(':')[-1] == p:
                             unit_vector_trans_NSLS2[i] = 1.0
                     unit_vector_trans_XRT = np.dot(
-                        self.coordinate_NSLS2XRT['upward'],
-                        unit_vector_trans_NSLS2)
+                        _coordinate_NSLS2XRT['upward'], unit_vector_trans_NSLS2)
 
                     center_list[int(np.where(
                         unit_vector_trans_XRT != 0)[0][0])] = (
