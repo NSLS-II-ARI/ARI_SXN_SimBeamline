@@ -81,7 +81,7 @@ class AriModel:
     # Add the M1 Baffle slit to beamline object bl
     m1_baffles = ID29Aperture(bl=bl,
                               name='m1_baffles',
-                              center=[0, 31094.5, 0],
+                              center=[0, 31094.5, 0],  # location (XRT coords)
                               x='auto', z='auto',
                               kind=['left', 'right', 'bottom', 'top'],
                               opening=[-10 / 2, 10 / 2,
