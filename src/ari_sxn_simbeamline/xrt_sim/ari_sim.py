@@ -1,7 +1,20 @@
-from bl_initialization import BLparams
 from custom_devices import ID29Source, ID29OE, ID29Aperture, ID29Screen
 import numpy as np
 import xrt.backends.raycing as xrt_raycing
+import xrt.backends.raycing.materials as xrt_material
+
+# Define optics coating material instances.
+nickel = xrt_material.Material('Ni', rho=8.908,
+                               table='Chantler Total',
+                               kind='mirror', name='Ni')
+
+gold = xrt_material.Material('Au', rho=19.3, table='Chantler Total',
+                             kind='mirror', name='Au')
+
+genericGR = xrt_material.Material('Ni', rho=8.908,
+                                  table='Chantler total',
+                                  kind='grating', name='generic grating',
+                                  efficiency=[(1, 1), (-1, 1)])  # efficiency=1
 
 
 class AriModel:
@@ -31,8 +44,6 @@ class AriModel:
     def __init__(self, update_comp=None):
         self.update_comp = update_comp
 
-    blG = BLparams()
-
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
 
@@ -40,8 +51,8 @@ class AriModel:
     energy_ref = 850.0  # eV
     energy_sigma = 5.0  # eV
     source = ID29Source(bl=bl,
-                        name='GeoSrc',
-                        center=(0, 0, 0),  # source position
+                        name='source',
+                        center=(0, 0, 0),  # location (global XRT coords)
                         nrays=10000,
                         distx='normal', dx=0.30,  # source linear profile
                         disty=None, dy=0,
@@ -53,59 +64,47 @@ class AriModel:
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False)
-    source.activate(updated=True)
+    source.activate(updated=True)  # initialize the source output
 
     # Add the M1 to beamline object bl
     m1 = ID29OE(bl=bl,
-                name='M1', center=blG['rM1'],
-                yaw=blG['yawM1xrt'], roll=blG['rolM1xrt'],
-                pitch=blG['pitM1xrt'],
-                material=blG['matM1'],
-                limPhysX=blG['XphysSzM1'], limOptX=blG['XoptSzM1'],
-                limPhysY=blG['YphysSzM1'], limOptY=blG['YoptSzM1'],
+                name='m1',
+                center=(0, 27850, 0),  # location (global XRT coords)
+                yaw=0, roll=0, pitch=np.radians(2),
+                material=gold,
+                limPhysX=[-400/2, 400/2], limOptX=[-240/2, 240/2],
+                limPhysY=[-60/2+10, 60/2+10], limOptY=[-15/2, 15/2],
                 shape='rect', upstream=source,
                 deflection='inboard')  # optics is defined in the material!!!
-    m1.activate(updated=True)
-
-    # Add the M2 to beamline object bl
-    m2 = ID29OE(bl=bl,
-                name='M2',
-                center=blG['rM1'],
-                yaw=blG['yawM1xrt'], roll=0.002, pitch=blG['pitM1xrt'],
-                material=blG['matM1'],
-                limPhysX=blG['XphysSzM1'],
-                limPhysY=blG['YphysSzM1'],
-                shape='rect',
-                upstream=m1,
-                deflection='outboard')  # optics is defined in the material!!!
-    m2.activate(updated=True)
+    m1.activate(updated=True)  # initialize the m1 mirror output.
 
     # Add the M1 Baffle slit to beamline object bl
-    slit1 = ID29Aperture(bl=bl,
-                         name='M1Baff_slit',
-                         center=[0, 57234, 0],  # blG['rSrctoM1Baff']
-                         x='auto', z='auto',  # what are these x and z???
-                         kind=['left', 'right', 'bottom', 'top'],
-                         opening=[-blG['HsltSz'] / 2, blG['HsltSz'] / 2,
-                                  -blG['VsltSz'] / 2, blG['VsltSz'] / 2],
-                         upstream=m2)
-    slit1.activate(updated=True)
-
-    # Add another slit at M1 diagnostic to block beam when diagnostic unit is in
-    slit2 = ID29Aperture(bl=bl,
-                         name='M1Diag_slit',
-                         center=blG['rSrcM1Diag'],
-                         x='auto', z='auto',  # what are these x and z???
-                         kind=['left', 'right', 'bottom', 'top'],
-                         opening=[-50, 50, -50, 50.0],
-                         upstream=slit1)
-    slit2.activate(updated=True)
+    m1_baffles = ID29Aperture(bl=bl,
+                              name='m1_baffles',
+                              center=[0, 31094.5, 0],
+                              x='auto', z='auto',
+                              kind=['left', 'right', 'bottom', 'top'],
+                              opening=[-10 / 2, 10 / 2,
+                                       -10 / 2, 10 / 2],
+                              upstream=m1)
+    m1_baffles.activate(updated=True)  # initialize the m1 baffles output
 
     # Add one screen at M1 diagnostic to monitor the beam
-    screen1 = ID29Screen(bl=bl,
-                         name='M1Diag_Scrn',
-                         center=blG['rSrcM1Diag'],
+    # NOTE: the IOC needs to select the right region based on diag position
+    m1_diag = ID29Screen(bl=bl,
+                         name='m1_diag',
+                         center=[0, 31340.6, 0],  # location (global XRT coords)
                          x=np.array([1, 0, 0]),
                          z=np.array([0, 0, 1]),
-                         upstream=slit2)
-    screen1.activate(updated=True)
+                         upstream=m1_baffles)
+    m1_diag.activate(updated=True)  # initialize the m1 diagnostic.
+
+    # Add another slit at M1 diagnostic to block beam when diagnostic unit is in
+    m1_diag_slit = ID29Aperture(bl=bl,
+                                name='m1_diag_slit',
+                                center=31340.7,  # 0.1mm downstream of diag
+                                x='auto', z='auto',
+                                kind=['left', 'right', 'bottom', 'top'],
+                                opening=[-50, 50, -50, 50.0],
+                                upstream=m1_baffles)
+    m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.
