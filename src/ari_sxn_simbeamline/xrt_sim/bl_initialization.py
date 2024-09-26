@@ -2,9 +2,13 @@ import numpy as np
 import xrt.backends.raycing.materials as xrt_material
 
 
-nickel = xrt_material.Material('Ni', rho=8.908, table='Chantler Total', kind='mirror', name='Ni')
-genericGR = xrt_material.Material('Ni', rho=8.908, table='Chantler total', kind='grating',
-                        name='generic grating', efficiency=[(1, 1), (-1, 1)])  # efficiency = 1
+nickel = xrt_material.Material('Ni', rho=8.908,
+                               table='Chantler Total',
+                               kind='mirror', name='Ni')
+genericGR = xrt_material.Material('Ni', rho=8.908,
+                                  table='Chantler total',
+                                  kind='grating', name='generic grating',
+                                  efficiency=[(1, 1), (-1, 1)])  # efficiency=1
 
 def BLparams():
     '''Initialize the beamline parameters!
