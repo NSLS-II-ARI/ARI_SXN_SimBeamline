@@ -72,8 +72,8 @@ class AriModel:
                 center=(0, 27850, 0),  # location (global XRT coords)
                 yaw=0, roll=0, pitch=np.radians(2),
                 material=gold,
-                limPhysX=[-400/2, 400/2], limOptX=[-240/2, 240/2],
-                limPhysY=[-60/2+10, 60/2+10], limOptY=[-15/2, 15/2],
+                limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
+                limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
                 deflection='inboard')  # optics is defined in the material!!!
     m1.activate(updated=True)  # initialize the m1 mirror output.
