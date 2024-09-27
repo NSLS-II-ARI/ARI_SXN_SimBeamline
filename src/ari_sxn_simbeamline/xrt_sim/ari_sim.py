@@ -99,7 +99,7 @@ class AriModel:
                          upstream=m1_baffles)
     m1_diag.activate(updated=True)  # initialize the m1 diagnostic.
 
-    # Add another slit at M1 diagnostic to block beam when diagnostic unit is in
+    # Add slit at M1 diagnostic to block beam when diagnostic unit is in
     m1_diag_slit = ID29Aperture(bl=bl,
                                 name='m1_diag_slit',
                                 center=31340.7,  # 0.1mm downstream of diag
