@@ -1,7 +1,14 @@
-from custom_devices import ID29Source, ID29OE, ID29Aperture, ID29Screen
+from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
+                            TestMirror)
 import numpy as np
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.materials as xrt_material
+
+
+# Define a test object to use in place of the caproto IOC for testing
+TestIOC = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
+                      'x': 0, 'y': 0})
+
 
 # Define optics coating material instances.
 nickel = xrt_material.Material('Ni', rho=8.908,
@@ -84,8 +91,8 @@ class AriModel:
                               center=[0, 31094.5, 0],  # location (XRT coords)
                               x='auto', z='auto',
                               kind=['left', 'right', 'bottom', 'top'],
-                              opening=[-10 / 2, 10 / 2,
-                                       -10 / 2, 10 / 2],
+                              opening=[-20 / 2, 20 / 2,
+                                       -20 / 2, 20 / 2],
                               upstream=m1)
     m1_baffles.activate(updated=True)  # initialize the m1 baffles output
 
@@ -105,6 +112,6 @@ class AriModel:
                                 center=31340.7,  # 0.1mm downstream of diag
                                 x='auto', z='auto',
                                 kind=['left', 'right', 'bottom', 'top'],
-                                opening=[-50, 50, -50, 50.0],
+                                opening=[-50, 50, -50, 50],
                                 upstream=m1_baffles)
     m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.

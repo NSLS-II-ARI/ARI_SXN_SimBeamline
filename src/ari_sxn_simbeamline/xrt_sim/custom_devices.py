@@ -1,8 +1,76 @@
 import numpy as np
+import random
 import xrt.backends.raycing.sources as xrt_source
 import xrt.backends.raycing.apertures as xrt_aperture
 import xrt.backends.raycing.screens as xrt_screen
 import xrt.backends.raycing.oes as xrt_oes
+
+
+class TestBase:
+    """Base class that provides input values needed for XRT models.
+
+    This is used to construct test variables so that the XRT model can be run
+    without the caproto IOC.
+
+    Parameters
+    ----------
+    inputs : dict
+        A dictionary mapping names for each 'input' attribute required to an
+        initial 'value' for the attribute.
+    """
+    def __init__(self, inputs):
+        for name, value in inputs:
+            setattr(self, name, value)
+
+
+class Test4Slit(TestBase):
+    """A class that provides input/output values needed for XRT slit models.
+
+    This is used to construct test variables so that the slits in the XRT model
+    can be run without the caproto IOC.
+
+    """
+
+    def __init__(self):
+        super().__init__({'top': 20, 'bottom': -20,
+                          'inboard': -20, 'outboard': 20})
+
+        self.currents = [random.uniform(0.0, 1E-6),
+                         random.uniform(0.0, 1E-6),
+                         random.uniform(0.0, 1E-6),
+                         random.uniform(0.0, 1E-6)]
+
+
+class TestDiagnostic(TestBase):
+    """A class that provides input/output values needed for XRT diag models.
+
+    This is used to construct test variables so that the diagnostics in the XRT
+    model can be run without the caproto IOC.
+
+    """
+    def __init__(self):
+        super().__init__({'multi_trans': 50, 'yag_trans': 0})
+        # provides the array_size values that define the output image array
+        self.array_size0 = 1280
+        self.array_size1 = 960
+        # provides the output array as a random np array.
+        self.camera = np.random.rand(self.array_size0, self.array_size1)
+        self.currents = [random.uniform(0.0, 1E-6),
+                         0, 0, 0]
+
+
+class TestMirror(TestBase):
+    """A class that provides input/output values needed for XRT mirror models.
+
+    This is used to construct test variables so that the Mirrors in the XRT
+    model can be run without the caproto IOC.
+
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    baffles = Test4Slit()
+    diagnostic = TestDiagnostic()
 
 
 # Transformation of coordinates between XRT and NSLS-II.
