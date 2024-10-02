@@ -84,6 +84,32 @@ _coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
                                             [0, 1.0, 0]])}
 
 
+def coord_transform(coords, transform_matrix):
+    """Transforms coords using transform_matrix, preserving nan values.
+
+    Parameters
+    ----------
+    coords : list or tuple.
+        Three element list or tuple that needs to be transformed via matrix
+        multiplication.
+    transform_matrix : numpy.array
+        A 3x3 numpy.array that is the transformation matrix to be used.
+
+    Returns
+    -------
+    output : list
+        Three element list containing the transformed coordinates.
+    """
+
+    nan_mask = np.where(np.isnan(coords), 0, 1)  # used to revert nans later
+    nan_mask = np.dot(transform_matrix, nan_mask)  # transform to output coords
+
+    output = np.dot(transform_matrix, coords)  # transform to output coords
+    output = np.where(nan_mask == 1, output, np.nan)  # revert nans
+
+    return output
+
+
 class ID29Source(xrt_source.GeometricSource):
     """
     A Geometric Source inherited from XRT.
@@ -93,6 +119,31 @@ class ID29Source(xrt_source.GeometricSource):
 
     Parameters
     ----------
+    parameter_map : dict
+        A dictionary mapping xrt parameters to python objects that return the
+        parameters values. As an example, assuming the use of the TestMirror
+        class in this package as the way to update parameters for an ID29OE
+        object the dictionary may look like:
+         ```
+         mirror = TestMirror({'Ry_coarse': np.radians(2),
+                              'Ry_fine': 0, 'Rz': 0,
+                              'x': 0, 'y': 0}
+
+         def
+
+         def Ry():
+            calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
+            return calculated_Ry
+
+         {'centre_x':mirror.x, 'center_y':mirror.y, 'Ry'}```
+
+    Notes:
+    1.  Only parameters that can be updated for the given device should be
+        included.
+    2.  The parameters can be provided as either a function that returns a value
+        (with no args/kwargs) or as an object that returns a value.
+    3.  For the 'centre' xrt parameter if a particular entry is not .
+
     *args : arguments
         The arguments passed to the parent
         'xrt.backends.raycing.sources.GeometricSource' class.
@@ -123,9 +174,10 @@ class ID29Source(xrt_source.GeometricSource):
         A method generating the beamOut attribute and updating the attribute if
         any parameters in update had been changed.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parameter_map, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.beamOut = None  # Output in global coordinate!
+        self.parameter_map = parameter_map
 
         # This dict needs to be modified later on!
         _source_pv2xrt = {'ARI_pgm:energy': 'energies'}
