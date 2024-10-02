@@ -109,21 +109,21 @@ class ID29Source(xrt_source.GeometricSource):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'centre':[mirror.x, mirror.y, np.nan],
+         parameter_map = {'center':[mirror.x, mirror.y, np.nan],
                           'angles':[np.nan, Ry, mirror.Rz]}
 
           ```
 
     Notes:
     1.  Only parameters that can be updated for the given device should be
-        included, for the 'centre' and 'angle' parameters these should be
+        included, for the 'center' and 'angle' parameters these should be
         provided in NSLS-II coordinates.
     2.  The parameters can be provided as either a function that returns a value
         (with no args/kwargs) or as an object that returns a value.
-    3.  For the 'centre' xrt parameter if a particular entry is not settable it
+    3.  For the 'center' xrt parameter if a particular entry is not settable it
         should be provided as an `np.nan`.
     4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element list
-        (called 'angles' as is done for 'centre', with any non settable values
+        (called 'angles' as is done for 'center', with any non settable values
         provided as `np.nan`s.
 
     *args : arguments
@@ -237,6 +237,29 @@ class ID29Source(xrt_source.GeometricSource):
                         setattr(self, self.pv2xrt[
                             pv_name.split(':')[0]][pv_name], pv_val)
                         updated = True
+
+        for parameter, source in self.parameter_map.items():
+            if parameter is in ['center', 'angles']:
+                nan_mask = np.where(np.isnan(source), 0, 1)
+                nan_mask = np.dot(_coordinate_NSLS2XRT['upward'], nan_mask)
+                source = np.where(np.isnan(source), 0, source)
+                source = np.dot(_coordinate_NSLS2XRT['upward'], source)
+                if parameter == 'center':
+                    current = getattr(self, 'center')
+                else:
+                    current = [getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz']]
+                source = np.where(nan_mask==0, current, source)
+                if source != current:
+                    updated=True
+                    if parameter = 'center':
+                        setattr(self, 'center', source)
+                    else:
+                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                            setattr(self, angle) = source[i]
+            else:
+                #ADD HERE THE GENERIC CASE
+
         if updated:
             self.beamOut = self.shine()
 
