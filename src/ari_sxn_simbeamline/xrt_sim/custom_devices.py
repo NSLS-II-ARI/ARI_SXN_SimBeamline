@@ -167,7 +167,7 @@ class ID29Source(xrt_source.GeometricSource):
 
         self.pv2xrt = {'ARI_pgm': _source_pv2xrt}
 
-    def activate(self, update=None, updated=False):
+    def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
 
@@ -176,8 +176,6 @@ class ID29Source(xrt_source.GeometricSource):
 
         Parameters
         ----------
-        update: dict
-            Wrap up the PV names and values, update = {'ARI_pgm:energy':850}.
 
         updated: a boolean, i.e., False (by default) or True.
             The boolean indicates the beamOut needs to be updated as the source
@@ -190,56 +188,8 @@ class ID29Source(xrt_source.GeometricSource):
             indicates a re-activation required.
         """
 
-        if update is not None:
-            for pv_name, pv_val in update.items():
-                if pv_name.split(':')[1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy()
-
-                    # Find out the position of changed element based on the
-                    # coordination transformation between NSLS2 and XRT
-                    unit_vector_trans_NSLS2 = np.array([0, 0, 0])
-                    for i, p in enumerate(['x', 'y', 'z']):
-                        if pv_name.split(':')[1] == p:
-                            unit_vector_trans_NSLS2[i] = 1.0
-                    unit_vector_trans_XRT = np.dot(
-                        _coordinate_NSLS2XRT['upward'], unit_vector_trans_NSLS2)
-
-                    center_list[int(np.where(unit_vector_trans_XRT != 0
-                                             )[0][0])] = \
-                        (pv_val * unit_vector_trans_XRT[int(np.where(
-                            unit_vector_trans_XRT != 0)[0][0])])
-                    if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list)
-                        updated = True
-
-                elif pv_name.split(':')[1][:2] in ['Rx', 'Ry', 'Rz']:
-                    angle_XRT = np.array(['pitch', 'roll', 'yaw'])
-
-                    unit_vector_angle_NSLS2 = np.array([0, 0, 0])
-                    for i, p in enumerate(['Rx', 'Ry', 'Rz']):
-                        if pv_name.split(':')[1][:2] == p:
-                            unit_vector_angle_NSLS2[i] = 1.0
-                    unit_vector_angle_XRT = np.dot(
-                        _coordinate_NSLS2XRT['upward'], unit_vector_angle_NSLS2)
-
-                    angle_set_v = pv_val * unit_vector_angle_XRT[
-                        int(np.where(unit_vector_angle_XRT != 0)[0][0])]
-                    if (getattr(self, str(angle_XRT[int(
-                            np.where(unit_vector_angle_XRT != 0)[0][0])])) !=
-                            angle_set_v):
-                        setattr(self, str(angle_XRT[int(
-                            np.where(unit_vector_angle_XRT != 0)[0][0])]),
-                                angle_set_v)
-                        updated = True
-                else:
-                    if getattr(self, self.pv2xrt[pv_name.split(':')[0]][
-                            pv_name]) != pv_val:
-                        setattr(self, self.pv2xrt[
-                            pv_name.split(':')[0]][pv_name], pv_val)
-                        updated = True
-
         for parameter, source in self.parameter_map.items():
-            if parameter is in ['center', 'angles']:
+            if parameter in ['center', 'angles']:
                 nan_mask = np.where(np.isnan(source), 0, 1)
                 nan_mask = np.dot(_coordinate_NSLS2XRT['upward'], nan_mask)
                 source = np.where(np.isnan(source), 0, source)
@@ -249,16 +199,18 @@ class ID29Source(xrt_source.GeometricSource):
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                source = np.where(nan_mask==0, current, source)
+                source = np.where(nan_mask == 0, current, source)
                 if source != current:
-                    updated=True
-                    if parameter = 'center':
+                    updated = True
+                    if parameter == 'center':
                         setattr(self, 'center', source)
                     else:
                         for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle) = source[i]
+                            setattr(self, angle, source[i])
             else:
-                #ADD HERE THE GENERIC CASE
+                if getattr(self, parameter) != source:
+                    updated = True
+                    setattr(self, parameter, source)
 
         if updated:
             self.beamOut = self.shine()
