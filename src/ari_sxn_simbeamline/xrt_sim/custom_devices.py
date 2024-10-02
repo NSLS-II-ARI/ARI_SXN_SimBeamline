@@ -103,8 +103,6 @@ class ID29Source(xrt_source.GeometricSource):
                               'Ry_fine': 0, 'Rz': 0,
                               'x': 0, 'y': 0}
 
-         def
-
          def Ry():
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
@@ -143,9 +141,6 @@ class ID29Source(xrt_source.GeometricSource):
         The input dict providing the parameter map described above.
     beamOut :  xrt.backends.raycing.sources_beams.Beam
         Output of most recent activate method in global coordinate!
-
-    pv2xrt : dict
-        Mapping the PV names and the terminology of XRT.
 
     Methods
     -------
