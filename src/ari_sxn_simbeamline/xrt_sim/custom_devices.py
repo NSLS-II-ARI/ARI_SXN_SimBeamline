@@ -162,11 +162,6 @@ class ID29Source(xrt_source.GeometricSource):
         self.beamOut = None  # Output in global coordinate!
         self.parameter_map = parameter_map
 
-        # This dict needs to be modified later on!
-        _source_pv2xrt = {'ARI_pgm:energy': 'energies'}
-
-        self.pv2xrt = {'ARI_pgm': _source_pv2xrt}
-
     def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
