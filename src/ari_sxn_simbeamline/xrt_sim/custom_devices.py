@@ -112,17 +112,17 @@ class ID29Source(xrt_source.GeometricSource):
 
           ```
 
-    Notes:
-    1.  Only parameters that can be updated for the given device should be
-        included, for the 'center' and 'angle' parameters these should be
-        provided in NSLS-II coordinates.
-    2.  The parameters can be provided as either a function that returns a value
-        (with no args/kwargs) or as an object that returns a value.
-    3.  For the 'center' xrt parameter if a particular entry is not settable it
-        should be provided as an `np.nan`.
-    4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element list
-        (called 'angles' as is done for 'center', with any non settable values
-        provided as `np.nan`s.
+        Notes:
+        1.  Only parameters that can be updated for the given device should be
+            included, for the 'center' and 'angle' parameters these should be
+            provided in NSLS-II coordinates.
+        2.  The parameters can be provided as either a function that returns a
+            value (with no args/kwargs) or as an object that returns a value.
+        3.  For the 'center' xrt parameter if a particular entry is not settable
+            it should be provided as an `np.nan`.
+        4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
+            list (called 'angles' as is done for 'center', with any non settable
+            values provided as `np.nan`s.
 
     *args : arguments
         The arguments passed to the parent
@@ -137,8 +137,6 @@ class ID29Source(xrt_source.GeometricSource):
     *attrs : many
         The attributes of the parent
         `xrt.backends.raycing.sources.GeometricSource` class.
-    parameter_map : dict
-        The input dict providing the parameter map described above.
     beamOut :  xrt.backends.raycing.sources_beams.Beam
         Output of most recent activate method in global coordinate!
 
@@ -155,7 +153,7 @@ class ID29Source(xrt_source.GeometricSource):
     def __init__(self, parameter_map, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.beamOut = None  # Output in global coordinate!
-        self.parameter_map = parameter_map
+        self._parameter_map = parameter_map
 
     def activate(self, updated=False):
         """
@@ -178,7 +176,7 @@ class ID29Source(xrt_source.GeometricSource):
             indicates a re-activation required.
         """
 
-        for parameter, source in self.parameter_map.items():
+        for parameter, source in self._parameter_map.items():
             if parameter in ['center', 'angles']:
                 nan_mask = np.where(np.isnan(source), 0, 1)
                 nan_mask = np.dot(_coordinate_NSLS2XRT['upward'], nan_mask)
@@ -219,7 +217,36 @@ class ID29OE(xrt_oes.OE):
     ----------
     upstream : arguments, such as m1, pgm ...
         The argument takes the beamline component that has Beam Object.
+    parameter_map : dict
+        A dictionary mapping xrt parameters to python objects that return the
+        parameters values. As an example, assuming the use of the TestMirror
+        class in this package as the way to update parameters for an ID29OE
+        object the dictionary may look like:
+         ```
+         mirror = TestMirror({'Ry_coarse': np.radians(2),
+                              'Ry_fine': 0, 'Rz': 0,
+                              'x': 0, 'y': 0}
 
+         def Ry():
+            calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
+            return calculated_Ry
+
+         parameter_map = {'center':[mirror.x, mirror.y, np.nan],
+                          'angles':[np.nan, Ry, mirror.Rz]}
+
+          ```
+
+        Notes:
+        1.  Only parameters that can be updated for the given device should be
+            included, for the 'center' and 'angle' parameters these should be
+            provided in NSLS-II coordinates.
+        2.  The parameters can be provided as either a function that returns a
+            value (with no args/kwargs) or as an object that returns a value.
+        3.  For the 'center' xrt parameter if a particular entry is not settable
+            it should be provided as an `np.nan`.
+        4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
+            list (called 'angles' as is done for 'center', with any non settable
+            values provided as `np.nan`s.
     *args : arguments
         The arguments passed to the parent 'xrt.backends.raycing.oes.OE' class.
 
@@ -241,12 +268,6 @@ class ID29OE(xrt_oes.OE):
     beamOutloc :
         Output of Beam Object in local coordinate!
 
-    pv2xrt : dict
-        Mapping the PV names and the terminology of XRT.
-
-    _upstream : argument
-        upstream.
-
     Methods
     -------
     *methods : many
@@ -256,26 +277,18 @@ class ID29OE(xrt_oes.OE):
         A method generating the beamOut attribute and updating the attribute if
         any parameters in update had been changed.
     """
-    def __init__(self, deflection='inboard', upstream=None, *args, **kwargs):
+    def __init__(self, parameter_map, deflection='inboard', upstream=None,
+                 *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self.beamOutloc = None  # Output in local coordinate!
-        self._upstream = upstream  # Object from modified XRT
+        self._parameter_map = parameter_map
         self.deflection = deflection
+        self._upstream = upstream  # Object from modified XRT
 
-        # Note: the sign needs to be carefully checked between NSLS-II and XRT!
-        _M1_pv2xrt = {'ARI_M1:Ry_fine': 'pitch', 'ARI_M1:Rz': 'roll',
-                      'ARI_M1:x': 'center', 'ARI_M1:y': 'center'}
-
-        _M2_pv2xrt = {'ARI_M2:Ry_fine': 'pitch', 'ARI_M2:Rz': 'roll',
-                      'ARI_M2:x': 'center', 'ARI_M2:y': 'center',
-                      'ARI_M2:z': 'center'}
-
-        self.pv2xrt = {'ARI_M1': _M1_pv2xrt, 'ARI_M2': _M2_pv2xrt}
-
-    def activate(self, update=None, updated=False):
+    def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
 
@@ -284,11 +297,8 @@ class ID29OE(xrt_oes.OE):
 
         Parameters
         ----------
-        update: a dict wrapping up the PV names and values,
-                update = {'ARI_M2:x': 0.2, 'ARI_M1:Ry_fine': 3.1}.
-
         updated: a boolean, i.e., False (by default) or True.
-        The Ture means the outcome of Beam Object needs to be updated
+        The True means the outcome of Beam Object needs to be updated
         as the beamline optics has been modified.
 
         Returns
@@ -298,54 +308,30 @@ class ID29OE(xrt_oes.OE):
             indicates a re-activation required.
         """
 
-        if update is not None:
-            for pv_name, pv_val in update.items():
-                if pv_name.split(':')[1] in ['x', 'y', 'z']:
-                    center_list = getattr(self, 'center').copy()
-
-                    # Find out the position of changed element based on the
-                    # coordination transformation between NSLS2 and XRT
-                    unit_vector_trans_NSLS2 = np.array([0, 0, 0])
-                    for i, p in enumerate(['x', 'y', 'z']):
-                        if pv_name.split(':')[1] == p:
-                            unit_vector_trans_NSLS2[i] = 1.0
-                    unit_vector_trans_XRT = np.dot(
-                        _coordinate_NSLS2XRT[self.deflection],
-                        unit_vector_trans_NSLS2)
-
-                    center_list[int(np.where(
-                        unit_vector_trans_XRT != 0)[0][0])] = (
-                            pv_val * unit_vector_trans_XRT[int(
-                                np.where(unit_vector_trans_XRT != 0)[0][0])])
-                    if getattr(self, 'center') != center_list:
-                        setattr(self, 'center', center_list)
-                        updated = True
-                elif pv_name.split(':')[1][:2] in ['Rx', 'Ry', 'Rz']:
-                    angle_XRT = np.array(['pitch', 'roll', 'yaw'])
-
-                    unit_vector_angle_NSLS2 = np.array([0, 0, 0])
-                    for i, p in enumerate(['Rx', 'Ry', 'Rz']):
-                        if pv_name.split(':')[1][:2] == p:
-                            unit_vector_angle_NSLS2[i] = 1.0
-                    unit_vector_angle_XRT = np.dot(
-                        _coordinate_NSLS2XRT[self.deflection],
-                        unit_vector_angle_NSLS2)
-
-                    angle_set_v = pv_val * unit_vector_angle_XRT[int(
-                        np.where(unit_vector_angle_XRT != 0)[0][0])]
-                    if (getattr(self, str(angle_XRT[int(
-                            np.where(unit_vector_angle_XRT != 0)[0][0])])) !=
-                            angle_set_v):
-                        setattr(self, str(angle_XRT[int(np.where(
-                            unit_vector_angle_XRT != 0)[0][0])]), angle_set_v)
-                        updated = True
-
+        for parameter, source in self._parameter_map.items():
+            if parameter in ['center', 'angles']:
+                nan_mask = np.where(np.isnan(source), 0, 1)
+                nan_mask = np.dot(_coordinate_NSLS2XRT[self.deflection],
+                                  nan_mask)
+                source = np.where(np.isnan(source), 0, source)
+                source = np.dot(_coordinate_NSLS2XRT[self.deflection], source)
+                if parameter == 'center':
+                    current = getattr(self, 'center')
                 else:
-                    if getattr(self, self.pv2xrt[
-                            pv_name.split(':')[0]][pv_name]) != pv_val:
-                        setattr(self, self.pv2xrt[
-                            pv_name.split(':')[0]][pv_name], pv_val)
-                        updated = True
+                    current = [getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz']]
+                source = np.where(nan_mask == 0, current, source)
+                if source != current:
+                    updated = True
+                    if parameter == 'center':
+                        setattr(self, 'center', source)
+                    else:
+                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                            setattr(self, angle, source[i])
+            else:
+                if getattr(self, parameter) != source:
+                    updated = True
+                    setattr(self, parameter, source)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
