@@ -1,5 +1,5 @@
 from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
-                            TestMirror)
+                            TestMirror, transform_NSLS2XRT)
 import numpy as np
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.materials as xrt_material
@@ -70,7 +70,8 @@ class AriModel:
                         distE='normal', energies=(energy_ref, energy_sigma),
                         polarization='horizontal',
                         filamentBeam=False,
-                        uniformRayDensity=False)
+                        uniformRayDensity=False,
+                        transform_matrix=transform_NSLS2XRT['upward'])
     source.activate(updated=True)  # initialize the source output
 
     # Add the M1 to beamline object bl
@@ -82,7 +83,7 @@ class AriModel:
                 limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
-                deflection='inboard')  # optics is defined in the material!!!
+                        transform_matrix=transform_NSLS2XRT['inboard'])
     m1.activate(updated=True)  # initialize the m1 mirror output.
 
     # Add the M1 Baffle slit to beamline object bl
@@ -93,7 +94,8 @@ class AriModel:
                               kind=['left', 'right', 'bottom', 'top'],
                               opening=[-20 / 2, 20 / 2,
                                        -20 / 2, 20 / 2],
-                              upstream=m1)
+                              upstream=m1,
+                              transform_matrix=transform_NSLS2XRT['upward'])
     m1_baffles.activate(updated=True)  # initialize the m1 baffles output
 
     # Add one screen at M1 diagnostic to monitor the beam
@@ -103,7 +105,8 @@ class AriModel:
                          center=[0, 31340.6, 0],  # location (global XRT coords)
                          x=np.array([1, 0, 0]),
                          z=np.array([0, 0, 1]),
-                         upstream=m1_baffles)
+                         upstream=m1_baffles,
+                        transform_matrix=transform_NSLS2XRT['upward'])
     m1_diag.activate(updated=True)  # initialize the m1 diagnostic.
 
     # Add slit at M1 diagnostic to block beam when diagnostic unit is in
@@ -113,5 +116,6 @@ class AriModel:
                                 x='auto', z='auto',
                                 kind=['left', 'right', 'bottom', 'top'],
                                 opening=[-50, 50, -50, 50],
-                                upstream=m1_baffles)
+                                upstream=m1_baffles,
+                                transform_matrix=transform_NSLS2XRT['upward'])
     m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.
