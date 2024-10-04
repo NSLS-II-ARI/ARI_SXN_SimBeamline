@@ -74,14 +74,14 @@ class TestMirror(TestBase):
 
 
 # Transformation of coordinates between XRT and NSLS-II.
-_coordinate_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
-                                             [-1.0, 0, 0]]),
-                        'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
-                                              [1.0, 0, 0]]),
-                        'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
-                                              [0, -1.0, 0]]),
-                        'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
-                                            [0, 1.0, 0]])}
+transform_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
+                                           [-1.0, 0, 0]]),
+                      'outboard': np.array([[0, 1.0, 0], [0, 0, 1.0],
+                                            [1.0, 0, 0]]),
+                      'downward': np.array([[1.0, 0, 0], [0, 0, 1.0],
+                                            [0, -1.0, 0]]),
+                      'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
+                                          [0, 1.0, 0]])}
 
 
 class ID29Source(xrt_source.GeometricSource):
@@ -107,8 +107,8 @@ class ID29Source(xrt_source.GeometricSource):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, np.nan],
-                          'angles':[np.nan, Ry, mirror.Rz]}
+         parameter_map = {'center':[mirror.x, mirror.y, 0],
+                          'angles':[0, Ry, mirror.Rz]}
 
           ```
 
@@ -119,11 +119,13 @@ class ID29Source(xrt_source.GeometricSource):
         2.  The parameters can be provided as either a function that returns a
             value (with no args/kwargs) or as an object that returns a value.
         3.  For the 'center' xrt parameter if a particular entry is not settable
-            it should be provided as an `np.nan`.
+            then the fixed value should be included as a float or int.
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
-            list (called 'angles' as is done for 'center', with any non settable
-            values provided as `np.nan`s.
-
+            list (called 'angles' as is done for 'center', with the default
+            value, as a float of int, used for any non settable angles.
+    transform_matrix : np.array
+        A 3x3 numpy array that is the transformation matrix between the input
+        'centre' and 'angle' coordinate system and the xrt coordinate system.
     *args : arguments
         The arguments passed to the parent
         'xrt.backends.raycing.sources.GeometricSource' class.
@@ -150,10 +152,13 @@ class ID29Source(xrt_source.GeometricSource):
         A method generating the beamOut attribute and updating the attribute if
         any parameters in update had been changed.
     """
-    def __init__(self, parameter_map, *args, **kwargs):
+    def __init__(self, parameter_map, *args,
+                 transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.beamOut = None  # Output in global coordinate!
         self._parameter_map = parameter_map
+        self._transform_matrix = transform_matrix
 
     def activate(self, updated=False):
         """
@@ -178,16 +183,12 @@ class ID29Source(xrt_source.GeometricSource):
 
         for parameter, source in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                nan_mask = np.where(np.isnan(source), 0, 1)
-                nan_mask = np.dot(_coordinate_NSLS2XRT['upward'], nan_mask)
-                source = np.where(np.isnan(source), 0, source)
-                source = np.dot(_coordinate_NSLS2XRT['upward'], source)
+                source = np.dot(self._transform_matrix, source)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                source = np.where(nan_mask == 0, current, source)
                 if source != current:
                     updated = True
                     if parameter == 'center':
@@ -231,8 +232,8 @@ class ID29OE(xrt_oes.OE):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, np.nan],
-                          'angles':[np.nan, Ry, mirror.Rz]}
+         parameter_map = {'center':[mirror.x, mirror.y, 0],
+                          'angles':[0, Ry, mirror.Rz]}
 
           ```
 
@@ -243,10 +244,13 @@ class ID29OE(xrt_oes.OE):
         2.  The parameters can be provided as either a function that returns a
             value (with no args/kwargs) or as an object that returns a value.
         3.  For the 'center' xrt parameter if a particular entry is not settable
-            it should be provided as an `np.nan`.
+            then the fixed value should be included as a float or int.
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
-            list (called 'angles' as is done for 'center', with any non settable
-            values provided as `np.nan`s.
+            list (called 'angles' as is done for 'center', with the default
+            value, as a float of int, used for any non settable angles.
+    transform_matrix : np.array
+        A 3x3 numpy array that is the transformation matrix between the input
+        'centre' and 'angle' coordinate system and the xrt coordinate system.
     *args : arguments
         The arguments passed to the parent 'xrt.backends.raycing.oes.OE' class.
 
@@ -277,15 +281,17 @@ class ID29OE(xrt_oes.OE):
         A method generating the beamOut attribute and updating the attribute if
         any parameters in update had been changed.
     """
-    def __init__(self, parameter_map, deflection='inboard', upstream=None,
+    def __init__(self, parameter_map,
+                 transform_matrix=np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                 upstream=None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self.beamOutloc = None  # Output in local coordinate!
+        self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
-        self.deflection = deflection
         self._upstream = upstream  # Object from modified XRT
 
     def activate(self, updated=False):
@@ -310,17 +316,12 @@ class ID29OE(xrt_oes.OE):
 
         for parameter, source in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                nan_mask = np.where(np.isnan(source), 0, 1)
-                nan_mask = np.dot(_coordinate_NSLS2XRT[self.deflection],
-                                  nan_mask)
-                source = np.where(np.isnan(source), 0, source)
-                source = np.dot(_coordinate_NSLS2XRT[self.deflection], source)
+                source = np.dot(self._transform_matrix, source)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                source = np.where(nan_mask == 0, current, source)
                 if source != current:
                     updated = True
                     if parameter == 'center':
