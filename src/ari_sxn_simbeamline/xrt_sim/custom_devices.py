@@ -73,6 +73,16 @@ class TestMirror(TestBase):
     diagnostic = TestDiagnostic()
 
 
+class TestM1(TestMirror):
+    """
+    Adds a function that converts the coarse and fine Ry angles into a single
+    angle.
+    """
+    def Ry(self):  # function used to calculate the combined M1 Ry
+        calculated_Ry = self.Ry_coarse + self.Ry_fine
+        return calculated_Ry
+
+
 # Transformation of coordinates between XRT and NSLS-II.
 transform_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
                                            [-1.0, 0, 0]]),

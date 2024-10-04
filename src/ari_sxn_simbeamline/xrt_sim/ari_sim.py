@@ -6,8 +6,8 @@ import xrt.backends.raycing.materials as xrt_material
 
 
 # Define a test object to use in place of the caproto IOC for testing
-TestIOC = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
-                      'x': 0, 'y': 0})
+mirror = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
+                     'x': 0, 'y': 0})
 
 
 # Define optics coating material instances.
@@ -24,6 +24,7 @@ genericGR = xrt_material.Material('Ni', rho=8.908,
                                   efficiency=[(1, 1), (-1, 1)])  # efficiency=1
 
 
+# noinspection PyUnresolvedReferences
 class AriModel:
     """
     The ARI beamline simulation based on XRT.
@@ -71,6 +72,8 @@ class AriModel:
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False,
+                        parameter_map={'center': [0, 0, 0],
+                                       'angles': [0, 0, 0]},
                         transform_matrix=transform_NSLS2XRT['upward'])
     source.activate(updated=True)  # initialize the source output
 
@@ -83,7 +86,9 @@ class AriModel:
                 limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
-                        transform_matrix=transform_NSLS2XRT['inboard'])
+                parameter_map={'center': [mirror.x, mirror.y, 0],
+                               'angles': [0, mirror.Ry, mirror.Rz]},
+                transform_matrix=transform_NSLS2XRT['inboard'])
     m1.activate(updated=True)  # initialize the m1 mirror output.
 
     # Add the M1 Baffle slit to beamline object bl
@@ -95,6 +100,11 @@ class AriModel:
                               opening=[-20 / 2, 20 / 2,
                                        -20 / 2, 20 / 2],
                               upstream=m1,
+                              parameter_map={
+                                  'opening': [mirror.baffles.outboard,
+                                              mirror.baffles.inboard,
+                                              mirror.baffles.bottom,
+                                              mirror.baffles.top]},
                               transform_matrix=transform_NSLS2XRT['upward'])
     m1_baffles.activate(updated=True)  # initialize the m1 baffles output
 
@@ -106,16 +116,20 @@ class AriModel:
                          x=np.array([1, 0, 0]),
                          z=np.array([0, 0, 1]),
                          upstream=m1_baffles,
-                        transform_matrix=transform_NSLS2XRT['upward'])
+                         parameter_map={},
+                         transform_matrix=transform_NSLS2XRT['upward'])
     m1_diag.activate(updated=True)  # initialize the m1 diagnostic.
 
     # Add slit at M1 diagnostic to block beam when diagnostic unit is in
     m1_diag_slit = ID29Aperture(bl=bl,
                                 name='m1_diag_slit',
-                                center=31340.7,  # 0.1mm downstream of diag
+                                center=[0, 31340.7, 0],  # 0.1mm offset to diag
                                 x='auto', z='auto',
                                 kind=['left', 'right', 'bottom', 'top'],
                                 opening=[-50, 50, -50, 50],
                                 upstream=m1_baffles,
+                                parameter_map={
+                                    'opening': [-50, 50, -50,
+                                                mirror.diagnostic.multi_trans]},
                                 transform_matrix=transform_NSLS2XRT['upward'])
     m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.
