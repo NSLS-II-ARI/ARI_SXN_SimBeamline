@@ -6,7 +6,7 @@ import xrt.backends.raycing.materials as xrt_material
 
 
 # Define a test object to use in place of the caproto IOC for testing
-mirror = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
+mirror1 = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
                      'x': 0, 'y': 0})
 
 
@@ -86,8 +86,8 @@ class AriModel:
                 limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
-                parameter_map={'center': [mirror.x, mirror.y, 0],
-                               'angles': [0, mirror.Ry, mirror.Rz]},
+                parameter_map={'center': [mirror1.x, mirror1.y, 0],
+                               'angles': [0, mirror1.Ry, mirror1.Rz]},
                 transform_matrix=transform_NSLS2XRT['inboard'])
     m1.activate(updated=True)  # initialize the m1 mirror output.
 
@@ -101,10 +101,10 @@ class AriModel:
                                        -20 / 2, 20 / 2],
                               upstream=m1,
                               parameter_map={
-                                  'opening': [mirror.baffles.outboard,
-                                              mirror.baffles.inboard,
-                                              mirror.baffles.bottom,
-                                              mirror.baffles.top]},
+                                  'opening': [mirror1.baffles.outboard,
+                                              mirror1.baffles.inboard,
+                                              mirror1.baffles.bottom,
+                                              mirror1.baffles.top]},
                               transform_matrix=transform_NSLS2XRT['upward'])
     m1_baffles.activate(updated=True)  # initialize the m1 baffles output
 
@@ -130,6 +130,6 @@ class AriModel:
                                 upstream=m1_baffles,
                                 parameter_map={
                                     'opening': [-50, 50, -50,
-                                                mirror.diagnostic.multi_trans]},
+                                                mirror1.diagnostic.multi_trans]},
                                 transform_matrix=transform_NSLS2XRT['upward'])
     m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.
