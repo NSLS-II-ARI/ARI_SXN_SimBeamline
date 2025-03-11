@@ -51,6 +51,9 @@ class AriModel:
 
     def __init__(self, update_comp=None):
         self.update_comp = update_comp
+        # Update the parents for the objects
+        for item in ['m1', 'm1_baffles', 'm1_diag', 'm1_diag_slit']:
+            getattr(self, item)._update_parent(self)
 
     def activate(self):
         """
