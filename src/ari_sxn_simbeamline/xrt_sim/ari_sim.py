@@ -59,10 +59,15 @@ class AriModel:
         """
         Activate the beamline components.
 
-        This method activates the beamline components in order.
+        This method activates the beamline components in order
+
+        TODO. Think about stepping through a list (as it is the same list as
+        used in the init method above perhaps think about having this as a
+        separate attribute. This might negate the need for the parent and/or
+        downstream items in the attribute objects (and the above list....)
 
         """
-        self._activate_beamline()
+
 
 
     # Initialize the beamline object
