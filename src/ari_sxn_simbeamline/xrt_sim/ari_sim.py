@@ -52,6 +52,16 @@ class AriModel:
     def __init__(self, update_comp=None):
         self.update_comp = update_comp
 
+    def activate(self):
+        """
+        Activate the beamline components.
+
+        This method activates the beamline components in order.
+
+        """
+        self._activate_beamline()
+
+
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
 

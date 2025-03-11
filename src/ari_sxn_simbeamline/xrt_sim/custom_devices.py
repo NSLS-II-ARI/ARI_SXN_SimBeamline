@@ -103,6 +103,9 @@ class ID29Source(xrt_source.GeometricSource):
 
     Parameters
     ----------
+    downstream : arguments, such as m1, pgm ...
+        The argument takes the beamline component that has this object as
+        Beam Object.
     parameter_map : dict
         A dictionary mapping xrt parameters to python objects that return the
         parameters values. As an example, assuming the use of the TestMirror
@@ -162,13 +165,14 @@ class ID29Source(xrt_source.GeometricSource):
         A method generating the beamOut attribute and updating the attribute if
         any parameters in update had been changed.
     """
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, downstream=None,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.beamOut = None  # Output in global coordinate!
         self._parameter_map = parameter_map
         self._transform_matrix = transform_matrix
+        self._downstream = downstream  # Object from modified XRT
 
     def activate(self, updated=False):
         """
@@ -228,6 +232,9 @@ class ID29OE(xrt_oes.OE):
     ----------
     upstream : arguments, such as m1, pgm ...
         The argument takes the beamline component that has Beam Object.
+    downstream : arguments, such as m1, pgm ...
+        The argument takes the beamline component that has this object as
+        Beam Object.
     parameter_map : dict
         A dictionary mapping xrt parameters to python objects that return the
         parameters values. As an example, assuming the use of the TestMirror
@@ -293,7 +300,7 @@ class ID29OE(xrt_oes.OE):
     """
     def __init__(self, parameter_map,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                 upstream=None,
+                 upstream=None, downstream=None,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -303,6 +310,7 @@ class ID29OE(xrt_oes.OE):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._downstream = downstream  # Object from modified XRT
 
     def activate(self, updated=False):
         """
@@ -363,6 +371,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
     ----------
     upstream : arguments, such as m1, pgm ...
         The argument takes the beamline component that has Beam Object.
+    downstream : arguments, such as m1, pgm ...
+        The argument takes the beamline component that has this object as
+        Beam Object.
     parameter_map : dict
         A dictionary mapping xrt parameters to python objects that return the
         parameters values. As an example, assuming the use of the TestMirror
@@ -424,7 +435,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         any parameters in update had been changed.
 
     """
-    def __init__(self, upstream=None,parameter_map,
+    def __init__(self, upstream=None, downstream=None, parameter_map,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -434,6 +445,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._downstream = downstream  # Object from modified XRT
 
     def activate(self, updated=False):
         """
@@ -497,6 +509,9 @@ class ID29Screen(xrt_screen.Screen):
     ----------
     upstream : arguments, such as m1, pgm ...
         The argument takes the beamline component that has Beam Object.
+    downstream : arguments, such as m1, pgm ...
+        The argument takes the beamline component that has this object as
+        Beam Object.
     parameter_map : dict
         A dictionary mapping xrt parameters to python objects that return the
         parameters values. As an example, assuming the use of the TestMirror
@@ -556,7 +571,7 @@ class ID29Screen(xrt_screen.Screen):
         any parameters in update had been changed.
 
     """
-    def __init__(self, upstream=None, parameter_map,
+    def __init__(self, upstream=None, downstream=None, parameter_map,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -566,6 +581,7 @@ class ID29Screen(xrt_screen.Screen):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._downstream = downstream  # Object from modified XRT
 
     def activate(self, updated=False):
         """
@@ -580,7 +596,7 @@ class ID29Screen(xrt_screen.Screen):
         Parameters
         ----------
         updated: a boolean, i.e., False (by default) or True.
-        The Ture means the outcome of Beam Object needs to be updated
+        True means the outcome of Beam Object needs to be updated
         as the beamline aperture has been modified.
 
         Returns
