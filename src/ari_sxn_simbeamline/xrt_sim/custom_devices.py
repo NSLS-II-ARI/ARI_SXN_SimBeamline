@@ -365,7 +365,8 @@ class ID29OE(xrt_oes.OE):
                     setattr(self, parameter, source)
 
         if updated:
-            self.beamIn = getattr(self._upstream, 'beamOut')
+            self.beamIn = getattr(getattr(self.parent, self._upstream),
+                                  'beamOut')
             self.beamOut, self.beamOutloc = self.reflect(self.beamIn)
 
         return updated
@@ -507,7 +508,8 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                     setattr(self, parameter, source)
 
         if updated:
-            self.beamIn = getattr(self._upstream, 'beamOut')
+            self.beamIn = getattr(getattr(self.parent, self._upstream),
+                                  'beamOut')
             self.beamOut = self.propagate(self.beamIn)
 
         return updated
@@ -648,7 +650,8 @@ class ID29Screen(xrt_screen.Screen):
                     setattr(self, parameter, source)
 
         if updated:
-            self.beamIn = getattr(self._upstream, 'beamOut')
+            self.beamIn = getattr(getattr(self.parent, self._upstream),
+                                  'beamOut')
             self.beamOut = self.expose(self.beamIn)
 
         return updated
