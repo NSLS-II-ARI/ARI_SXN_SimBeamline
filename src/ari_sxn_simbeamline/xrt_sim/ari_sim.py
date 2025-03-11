@@ -82,6 +82,7 @@ class AriModel:
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False,
+                        downstream=m1,
                         parameter_map={'center': [0, 0, 0],
                                        'angles': [0, 0, 0]},
                         transform_matrix=transform_NSLS2XRT['upward'])
