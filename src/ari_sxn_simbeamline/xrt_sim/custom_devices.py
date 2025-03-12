@@ -192,6 +192,8 @@ class ID29Source(xrt_source.GeometricSource):
             indicates a re-activation required.
         """
 
+        # TODO: Need to add the 'energies' tuple, with the form (energy,
+        #  bandwidth), to this. Consider a look-up table for the bandwidth.
         for parameter, source in self._parameter_map.items():
             if parameter in ['center', 'angles']:
                 source = np.dot(self._transform_matrix, source)

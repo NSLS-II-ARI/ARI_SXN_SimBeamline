@@ -47,7 +47,10 @@ class AriModel:
     """
 
     def __init__(self):
-        self.components = ['source', 'm1', 'm1_baffles', 'm1_diag']
+        # An ordered list of beamline components
+        self.components = ['source', 'm1', 'm1_baffles', 'm1_diag',
+                           'm1_diag_slit']
+        self.activate(updated=True)  # Initialize the beamline components
 
     def activate(self, updated=False):
         """
@@ -74,10 +77,11 @@ class AriModel:
 
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
+    energy_value = 850.0  # default energy in eV.
+    energy_bandwidth = 5.0  # default energy width in eV.
 
     # Add the source to beamline object bl
-    energy_ref = 850.0  # eV
-    energy_sigma = 5.0  # eV
+    # TODO: Consider a toroidal (donut) source profile.
     source = ID29Source(bl=bl,
                         name='source',
                         center=(0, 0, 0),  # location (global XRT coords)
@@ -88,7 +92,8 @@ class AriModel:
                         distxprime='normal', dxprime=0.0001,  # angular profile
                         distzprime='normal', dzprime=0.01,
                         # source energy profile below
-                        distE='normal', energies=(energy_ref, energy_sigma),
+                        distE='normal',
+                        energies=(energy_value, energy_bandwidth),
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False,
@@ -96,7 +101,7 @@ class AriModel:
                         parameter_map={'center': [0, 0, 0],
                                        'angles': [0, 0, 0]},
                         transform_matrix=transform_NSLS2XRT['upward'])
-    source.activate(updated=True)  # initialize the source output
+
 
     # Add the M1 to beamline object bl
     m1 = ID29OE(bl=bl,
@@ -110,7 +115,6 @@ class AriModel:
                 parameter_map={'center': [mirror1.x, mirror1.y, 0],
                                'angles': [0, mirror1.Ry, mirror1.Rz]},
                 transform_matrix=transform_NSLS2XRT['inboard'])
-    m1.activate(updated=True)  # initialize the m1 mirror output.
 
     # Add the M1 Baffle slit to beamline object bl
     m1_baffles = ID29Aperture(bl=bl,
@@ -127,10 +131,11 @@ class AriModel:
                                               mirror1.baffles.bottom,
                                               mirror1.baffles.top]},
                               transform_matrix=transform_NSLS2XRT['upward'])
-    m1_baffles.activate(updated=True)  # initialize the m1 baffles output
+
 
     # Add one screen at M1 diagnostic to monitor the beam
     # NOTE: the IOC needs to select the right region based on diag position
+    # and potentially energy filter based on if a multilayer is inserted.
     m1_diag = ID29Screen(bl=bl,
                          name='m1_diag',
                          center=[0, 31340.6, 0],  # location (global XRT coords)
@@ -139,7 +144,7 @@ class AriModel:
                          upstream='m1_baffles', downstream='m1_diag_slit',
                          parameter_map={},
                          transform_matrix=transform_NSLS2XRT['upward'])
-    m1_diag.activate(updated=True)  # initialize the m1 diagnostic.
+
 
     # Add slit at M1 diagnostic to block beam when diagnostic unit is in
     m1_diag_slit = ID29Aperture(bl=bl,
@@ -153,4 +158,3 @@ class AriModel:
                                     'opening': [-50, 50, -50,
                                                 mirror1.diagnostic.multi_trans]},
                                 transform_matrix=transform_NSLS2XRT['upward'])
-    m1_diag_slit.activate(updated=True)  # initialize the m1 diag screen.
