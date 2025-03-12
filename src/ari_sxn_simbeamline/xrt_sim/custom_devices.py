@@ -79,7 +79,6 @@ class TestM1(TestMirror):
     angle.
     """
 
-
     @property
     def Ry(self):  # function used to calculate the combined M1 Ry
         calculated_Ry = self.Ry_coarse + self.Ry_fine
@@ -150,7 +149,7 @@ class ID29Source(xrt_source.GeometricSource):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent
         `xrt.backends.raycing.sources.GeometricSource` class.
     beamOut :
@@ -172,7 +171,6 @@ class ID29Source(xrt_source.GeometricSource):
         self.beamOut = None  # Output in global coordinate!
         self._parameter_map = parameter_map
         self._transform_matrix = transform_matrix
-
 
     def activate(self, updated=False):
         """
@@ -277,7 +275,7 @@ class ID29OE(xrt_oes.OE):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent `xrt.backends.raycing.oes.OE` class.
     beamIn :
         Input to use in the self.reflect() method call inside self.activate
@@ -310,7 +308,6 @@ class ID29OE(xrt_oes.OE):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
-
 
     def activate(self, updated=False):
         """
@@ -413,7 +410,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent
         `xrt.backends.raycing.apertures.RectangularAperture` class.
     beamIn :
@@ -443,7 +440,6 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
-
 
     def activate(self, updated=False):
         """
@@ -549,7 +545,7 @@ class ID29Screen(xrt_screen.Screen):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the `xrt.backends.raycing.screens.Screen` class.
     beamIn :
         Input to use in the self.expose() method call inside self.activate
@@ -577,7 +573,6 @@ class ID29Screen(xrt_screen.Screen):
         self._transform_matrix = transform_matrix
         self._parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
-
 
     def activate(self, updated=False):
         """
