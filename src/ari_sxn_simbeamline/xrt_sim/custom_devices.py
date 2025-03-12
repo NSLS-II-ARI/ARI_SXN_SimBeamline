@@ -99,7 +99,8 @@ class ID29Source(xrt_source.GeometricSource):
     A Geometric Source inherited from XRT.
 
     Update the xrt.backends.raycing.sources.GeometricSource with an activate
-    method, and add the Beam Object (beamOut) generated from the shine() method.
+    method and beamOut, transform_matrix and parameter_map attributes. All are
+    described below.
 
     Parameters
     ----------
@@ -149,18 +150,17 @@ class ID29Source(xrt_source.GeometricSource):
     *attrs : many
         The attributes of the parent
         `xrt.backends.raycing.sources.GeometricSource` class.
-    beamOut :  xrt.backends.raycing.sources_beams.Beam
-        Output of most recent activate method in global coordinate!
+    beamOut :
+        Output of self.shine() method call inside self.activate.
 
     Methods
     -------
     *methods : many
         The methods of the parent `xrt.backends.raycing.sources.GeometricSource`
         class.
-
-    activate(update=None, updated=False) :
-        A method generating the beamOut attribute and updating the attribute if
-        any parameters in update had been changed.
+    activate(updated=False) :
+        A method that updates the beamOut attribute if any parameters it uses
+        have been changed or if updated=True.
     """
     def __init__(self, parameter_map, *args,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
@@ -222,8 +222,9 @@ class ID29OE(xrt_oes.OE):
     """
     A modified OE class including the beamIn and beamOut attributes.
 
-    Updates the xrt.backends.raycing.oes.OE with an update method, and adds the
-    Beam Object (beamIn/beamOut) generated from the reflect() method.
+    Updates the xrt.backends.raycing.oes.OE with an activate method and
+    beamIn, beamOut, upstream, transform_matrix and parameter_map attributes.
+    All are described below.
 
     Parameters
     ----------
@@ -273,25 +274,26 @@ class ID29OE(xrt_oes.OE):
     ----------
     *attrs : many
         The attributes of the parent `xrt.backends.raycing.oes.OE` class.
-
     beamIn :
-        Input of Beam Object in global coordinate!
-
+        Input to use in the self.reflect() method call inside self.activate
+        global coordinate.
     beamOut :
-        Output of Beam Object in global coordinate!
-
+        Output of self.reflect() method call inside self.activate in XRT global
+        co-ordinates.
     beamOutloc :
-        Output of Beam Object in local coordinate!
+        Output of self.reflect() method call inside self.activate in XRT local
+        co-ordinates.
 
     Methods
     -------
     *methods : many
         The methods of the parent `xrt.backends.raycing.oes.OE` class.
 
-    activate(update=None, updated=False) :
-        A method generating the beamOut attribute and updating the attribute if
-        any parameters in update had been changed.
+    activate(updated=False) :
+        A method that updates the beamOut attribute if any parameters it uses
+        have been changed or if updated=True.
     """
+
     def __init__(self, parameter_map, *args,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  upstream=None, **kwargs):
@@ -357,8 +359,8 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
     A modified Aperture class including the beamIn and beamOut attributes.
 
     Updates the xrt.backends.raycing.apertures.RectangularAperture with an
-    activate method, and adds the Beam Object (beamIn/beamOut) generated from
-    the propagate() method.
+    activate method and beamIn, beamOut, upstream, transform_matrix and
+    parameter_map attributes. All are described below.
 
     Parameters
     ----------
@@ -410,9 +412,10 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         The attributes of the parent
         `xrt.backends.raycing.apertures.RectangularAperture` class.
     beamIn :
-        Input of Beam Object in global coordinate!
+        Input to use in the self.propagate() method call inside self.activate
+        global coordinate.
     beamOut :
-        Output of Beam Object in global coordinate!
+        Output of self.propagate() method call inside self.activate.
 
 
     Methods
@@ -420,9 +423,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
     *methods : many
         The methods of the parent `xrt.backends.raycing.apertures
         `RectangularAperture` class.
-    activate(update=None, updated=False) :
-        A method generating the beamOut attribute and updating the attribute if
-        any parameters in update had been changed.
+    activate(updated=False) :
+        A method that updates the beamOut attribute if any parameters it uses
+        have been changed or if updated=True.
 
     """
     def __init__(self, upstream=None, parameter_map, *args,
@@ -491,9 +494,9 @@ class ID29Screen(xrt_screen.Screen):
     """
     A modified Screen class including the beamIn and beamOut attributes.
 
-    Updates the xrt.backends.raycing.screens.Screen with an update method,
-    and adds the Beam Object (beamIn/beamOut) generated from the expose()
-    method.
+    Updates the xrt.backends.raycing.screens.Screen with an activate method and
+    beamIn, beamOut, upstream, transform_matrix and parameter_map attributes.
+    All are described below.
 
     Parameters
     ----------
@@ -544,18 +547,19 @@ class ID29Screen(xrt_screen.Screen):
     *attrs : many
         The attributes of the `xrt.backends.raycing.screens.Screen` class.
     beamIn :
-        Input of Beam Object in global coordinate!
+        Input to use in the self.expose() method call inside self.activate
+        global coordinate.
     beamOut :
-        Output of Beam Object in global coordinate!
+        Output of self.expose() method call inside self.activate.
 
     Methods
     -------
     *methods : many
         The methods of the parent `xrt.backends.raycing.screens.Screen` class.
 
-    activate(update=None, updated=False) :
-        A method generating the beamOut attribute and updating the attribute if
-        any parameters in update had been changed.
+    activate(updated=False) :
+        A method that updates the beamOut attribute if any parameters it uses
+        have been changed or if updated=True.
 
     """
     def __init__(self, upstream=None, parameter_map, *args,

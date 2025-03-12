@@ -30,10 +30,7 @@ class AriModel:
     The ARI beamline simulation based on XRT.
 
     This class simulates the beam propagation along the ARI beamline and gives
-    the beam properties from each beamline component.
-
-    TODO:
-    One update method will be constructed in the integration with Caproto IOC.
+    the beam properties at each beamline component.
 
     Parameters
     ----------
@@ -49,9 +46,7 @@ class AriModel:
 
     """
 
-    def __init__(self, update_comp=None):
-        self.update_comp = update_comp
-        # A list of beamline components in order of beam propagation
+    def __init__(self):
         self.components = ['source', 'm1', 'm1_baffles', 'm1_diag']
 
     def activate(self, updated=False):
@@ -59,7 +54,10 @@ class AriModel:
         Activate the beamline components.
 
         This method activates the required beamline components in order, as
-        specified by the updated attribute.
+        specified by the updated attribute. It returns 'updated' as it may be
+        modified by the calls to the component activate methods. This is done
+        purely so that AriModel could potentially be used as a component in a
+        higher level beamline object.
 
         Parameters
         updated: a boolean, i.e., False (by default) or True.
@@ -70,6 +68,8 @@ class AriModel:
 
         for item in self.components:
             updated = getattr(self, item).activate(updated=updated)
+
+            return updated
 
 
     # Initialize the beamline object
