@@ -51,23 +51,25 @@ class AriModel:
 
     def __init__(self, update_comp=None):
         self.update_comp = update_comp
-        # Update the parents for the objects
-        for item in ['m1', 'm1_baffles', 'm1_diag', 'm1_diag_slit']:
-            getattr(self, item)._update_parent(self)
+        # A list of beamline components in order of beam propagation
+        self.components = ['source', 'm1', 'm1_baffles', 'm1_diag']
 
-    def activate(self):
+    def activate(self, updated=False):
         """
         Activate the beamline components.
 
-        This method activates the beamline components in order
+        This method activates the required beamline components in order, as
+        specified by the updated attribute.
 
-        TODO. Think about stepping through a list (as it is the same list as
-        used in the init method above perhaps think about having this as a
-        separate attribute. This might negate the need for the parent and/or
-        downstream items in the attribute objects (and the above list....)
-
+        Parameters
+        updated: a boolean, i.e., False (by default) or True.
+            True means the outcome of all components needs to be updated
+            otherwise it will only update items (and those downstream) for which
+            some of the parameters have been changed.
         """
 
+        for item in self.components:
+            updated = getattr(self, item).activate(updated=updated)
 
 
     # Initialize the beamline object
