@@ -202,13 +202,13 @@ class ID29Source(xrt_source.GeometricSource):
                     current = getattr(self, 'center')
                 else:
                     current = (getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz'])
+                               for angle in ['pitch', 'roll', 'yaw'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
                         setattr(self, 'center', origin)
                     else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
                             setattr(self, angle, origin[i])
             else:
                 if getattr(self, parameter) != origin:
@@ -249,6 +249,9 @@ class ID29OE(xrt_oes.OE):
 
          parameter_map = {'center':[mirror.x, mirror.y, 0],
                           'angles':[0, Ry, mirror.Rz]}
+
+         here 'center' is [x, y, z] and 'angles' is [pitch, roll, yaw] in XRT
+         global coordinates
 
           ```
 
@@ -336,13 +339,13 @@ class ID29OE(xrt_oes.OE):
                     current = getattr(self, 'center')
                 else:
                     current = (getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz'])
+                               for angle in ['pitch', 'roll', 'yaw'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
                         setattr(self, 'center', origin)
                     else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
                             setattr(self, angle, origin[i])
             else:
                 if getattr(self, parameter) != origin:
@@ -471,13 +474,13 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                     current = getattr(self, 'center')
                 else:
                     current = (getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz'])
+                               for angle in ['pitch', 'roll', 'yaw'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
                         setattr(self, 'center', origin)
                     else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
                             setattr(self, angle, origin[i])
             else:
                 if getattr(self, parameter) != origin:
@@ -605,13 +608,13 @@ class ID29Screen(xrt_screen.Screen):
                     current = getattr(self, 'center')
                 else:
                     current = (getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz'])
+                               for angle in ['pitch', 'roll', 'yaw'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
                         setattr(self, 'center', origin)
                     else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
+                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
                             setattr(self, angle, origin[i])
             else:
                 if getattr(self, parameter) != origin:

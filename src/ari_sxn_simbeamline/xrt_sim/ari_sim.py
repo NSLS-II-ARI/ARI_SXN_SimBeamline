@@ -112,7 +112,7 @@ class AriModel:
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
                 parameter_map={'center': [mirror1.x, mirror1.y, 0],
-                               'angles': [0, mirror1.Ry, mirror1.Rz]},
+                               'angles': [mirror1.Ry, mirror1.Rz, 0]},
                 transform_matrix=transform_NSLS2XRT['inboard'])
 
     # Add the M1 Baffle slit to beamline object bl
