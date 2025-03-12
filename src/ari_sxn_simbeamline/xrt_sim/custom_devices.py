@@ -197,7 +197,7 @@ class ID29Source(xrt_source.GeometricSource):
         #  bandwidth), to this. Consider a look-up table for the bandwidth.
         for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                origin = np.dot(self._transform_matrix, origin)
+                origin = tuple(np.dot(self._transform_matrix, origin))
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
@@ -331,7 +331,7 @@ class ID29OE(xrt_oes.OE):
 
         for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                origin = np.dot(self._transform_matrix, origin)
+                origin = tuple(np.dot(self._transform_matrix, origin))
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
@@ -466,7 +466,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
 
         for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                origin = np.dot(self._transform_matrix, origin)
+                origin = tuple(np.dot(self._transform_matrix, origin))
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
@@ -600,7 +600,7 @@ class ID29Screen(xrt_screen.Screen):
 
         for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                origin = np.dot(self._transform_matrix, origin)
+                origin = tuple(np.dot(self._transform_matrix, origin))
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
