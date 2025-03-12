@@ -201,8 +201,8 @@ class ID29Source(xrt_source.GeometricSource):
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
+                    current = (getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
@@ -335,8 +335,8 @@ class ID29OE(xrt_oes.OE):
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
+                    current = (getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
@@ -470,8 +470,8 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
+                    current = (getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
@@ -604,8 +604,8 @@ class ID29Screen(xrt_screen.Screen):
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
+                    current = (getattr(self, angle)
+                               for angle in ['Rx', 'Ry', 'Rz'])
                 if origin != current:
                     updated = True
                     if parameter == 'center':
