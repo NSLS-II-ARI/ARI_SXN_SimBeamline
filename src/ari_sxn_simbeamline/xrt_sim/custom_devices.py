@@ -195,25 +195,25 @@ class ID29Source(xrt_source.GeometricSource):
 
         # TODO: Need to add the 'energies' tuple, with the form (energy,
         #  bandwidth), to this. Consider a look-up table for the bandwidth.
-        for parameter, source in self._parameter_map.items():
+        for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
+                origin = np.dot(self._transform_matrix, origin)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
+                if origin != current:
                     updated = True
                     if parameter == 'center':
-                        setattr(self, 'center', source)
+                        setattr(self, 'center', origin)
                     else:
                         for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
+                            setattr(self, angle, origin[i])
             else:
-                if getattr(self, parameter) != source:
+                if getattr(self, parameter) != origin:
                     updated = True
-                    setattr(self, parameter, source)
+                    setattr(self, parameter, origin)
 
         if updated:
             self.beamOut = self.shine()
@@ -329,25 +329,25 @@ class ID29OE(xrt_oes.OE):
             indicates a re-activation required.
         """
 
-        for parameter, source in self._parameter_map.items():
+        for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
+                origin = np.dot(self._transform_matrix, origin)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
+                if origin != current:
                     updated = True
                     if parameter == 'center':
-                        setattr(self, 'center', source)
+                        setattr(self, 'center', origin)
                     else:
                         for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
+                            setattr(self, angle, origin[i])
             else:
-                if getattr(self, parameter) != source:
+                if getattr(self, parameter) != origin:
                     updated = True
-                    setattr(self, parameter, source)
+                    setattr(self, parameter, origin)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -464,25 +464,25 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
 
         """
 
-        for parameter, source in self._parameter_map.items():
+        for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
+                origin = np.dot(self._transform_matrix, origin)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
+                if origin != current:
                     updated = True
                     if parameter == 'center':
-                        setattr(self, 'center', source)
+                        setattr(self, 'center', origin)
                     else:
                         for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
+                            setattr(self, angle, origin[i])
             else:
-                if getattr(self, parameter) != source:
+                if getattr(self, parameter) != origin:
                     updated = True
-                    setattr(self, parameter, source)
+                    setattr(self, parameter, origin)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -598,25 +598,25 @@ class ID29Screen(xrt_screen.Screen):
 
         """
 
-        for parameter, source in self._parameter_map.items():
+        for parameter, origin in self._parameter_map.items():
             if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
+                origin = np.dot(self._transform_matrix, origin)
                 if parameter == 'center':
                     current = getattr(self, 'center')
                 else:
                     current = [getattr(self, angle)
                                for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
+                if origin != current:
                     updated = True
                     if parameter == 'center':
-                        setattr(self, 'center', source)
+                        setattr(self, 'center', origin)
                     else:
                         for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
+                            setattr(self, angle, origin[i])
             else:
-                if getattr(self, parameter) != source:
+                if getattr(self, parameter) != origin:
                     updated = True
-                    setattr(self, parameter, source)
+                    setattr(self, parameter, origin)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
