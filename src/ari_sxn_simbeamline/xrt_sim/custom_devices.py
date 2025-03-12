@@ -19,7 +19,7 @@ class TestBase:
         initial 'value' for the attribute.
     """
     def __init__(self, inputs):
-        for name, value in inputs:
+        for name, value in inputs.items():
             setattr(self, name, value)
 
 
@@ -78,6 +78,9 @@ class TestM1(TestMirror):
     Adds a function that converts the coarse and fine Ry angles into a single
     angle.
     """
+
+
+    @property
     def Ry(self):  # function used to calculate the combined M1 Ry
         calculated_Ry = self.Ry_coarse + self.Ry_fine
         return calculated_Ry
@@ -430,9 +433,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         have been changed or if updated=True.
 
     """
-    def __init__(self, upstream=None, parameter_map, *args,
+    def __init__(self, parameter_map, *args,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                 **kwargs):
+                 upstream=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
@@ -564,9 +567,9 @@ class ID29Screen(xrt_screen.Screen):
         have been changed or if updated=True.
 
     """
-    def __init__(self, upstream=None, parameter_map, *args,
+    def __init__(self, parameter_map, *args,
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                 **kwargs):
+                 upstream=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!

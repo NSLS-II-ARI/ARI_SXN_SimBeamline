@@ -1,12 +1,12 @@
 from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
-                            TestMirror, transform_NSLS2XRT)
+                            TestM1, transform_NSLS2XRT)
 import numpy as np
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.materials as xrt_material
 
 
 # Define a test object to use in place of the caproto IOC for testing
-mirror1 = TestMirror({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
+mirror1 = TestM1({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
                      'x': 0, 'y': 0})
 
 
@@ -97,7 +97,6 @@ class AriModel:
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False,
-                        downstream='m1',
                         parameter_map={'center': [0, 0, 0],
                                        'angles': [0, 0, 0]},
                         transform_matrix=transform_NSLS2XRT['upward'])
@@ -111,7 +110,7 @@ class AriModel:
                 material=gold,
                 limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
-                shape='rect', upstream='source', downstream='m1_baffles',
+                shape='rect', upstream=source,
                 parameter_map={'center': [mirror1.x, mirror1.y, 0],
                                'angles': [0, mirror1.Ry, mirror1.Rz]},
                 transform_matrix=transform_NSLS2XRT['inboard'])
@@ -124,7 +123,7 @@ class AriModel:
                               kind=['left', 'right', 'bottom', 'top'],
                               opening=[-20 / 2, 20 / 2,
                                        -20 / 2, 20 / 2],
-                              upstream='m1', downstream='m1_diag',
+                              upstream=m1,
                               parameter_map={
                                   'opening': [mirror1.baffles.outboard,
                                               mirror1.baffles.inboard,
@@ -141,7 +140,7 @@ class AriModel:
                          center=[0, 31340.6, 0],  # location (global XRT coords)
                          x=np.array([1, 0, 0]),
                          z=np.array([0, 0, 1]),
-                         upstream='m1_baffles', downstream='m1_diag_slit',
+                         upstream=m1_baffles,
                          parameter_map={},
                          transform_matrix=transform_NSLS2XRT['upward'])
 
@@ -153,7 +152,7 @@ class AriModel:
                                 x='auto', z='auto',
                                 kind=['left', 'right', 'bottom', 'top'],
                                 opening=[-50, 50, -50, 50],
-                                upstream='m1_baffles', downstream=None,
+                                upstream=m1_baffles,
                                 parameter_map={
                                     'opening': [-50, 50, -50,
                                                 mirror1.diagnostic.multi_trans]},
