@@ -7,7 +7,7 @@ import xrt.backends.raycing.materials as xrt_material
 
 # Define a test object to use in place of the caproto IOC for testing
 mirror1 = TestM1({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
-                     'x': 0, 'y': 0})
+                  'x': 0, 'y': 0})
 
 
 # Define optics coating material instances.
@@ -74,7 +74,6 @@ class AriModel:
 
             return updated
 
-
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
     energy_value = 850.0  # default energy in eV.
@@ -97,10 +96,10 @@ class AriModel:
                         polarization='horizontal',
                         filamentBeam=False,
                         uniformRayDensity=False,
-                        parameter_map={'center': [0, 0, 0],
-                                       'angles': [0.1, 0.2, 0.3]},
+                        parameter_map={'center': {'x': 0, 'y': 0, 'z': 0},
+                                       'angles': {'pitch': 0.1, 'roll': 0.2,
+                                                  'yaw': 0.3}},
                         transform_matrix=transform_NSLS2XRT['upward'])
-
 
     # Add the M1 to beamline object bl
     m1 = ID29OE(bl=bl,
@@ -111,49 +110,56 @@ class AriModel:
                 limPhysX=[-60/2+10, 60/2+10], limOptX=[-15/2, 15/2],
                 limPhysY=[-400/2, 400/2], limOptY=[-240/2, 240/2],
                 shape='rect', upstream=source,
-                parameter_map={'center': [mirror1.x, mirror1.y, 0],
-                               'angles': [mirror1.Ry, mirror1.Rz, 0]},
+                parameter_map={'center': {'x': (mirror1, 'x'),
+                                          'y': (mirror1, 'y'),
+                                          'z': 0},
+                               'angles': {'pitch': (mirror1, 'Ry'),
+                                          'roll': (mirror1, 'Rz'),
+                                          'yaw': 0}},
                 transform_matrix=transform_NSLS2XRT['inboard'])
 
     # Add the M1 Baffle slit to beamline object bl
     m1_baffles = ID29Aperture(bl=bl,
                               name='m1_baffles',
-                              center=[0, 31094.5, 0],  # location (XRT coords)
+                              center=(0, 31094.5, 0),  # location (XRT coords)
                               x='auto', z='auto',
                               kind=['left', 'right', 'bottom', 'top'],
                               opening=[-20 / 2, 20 / 2,
                                        -20 / 2, 20 / 2],
                               upstream=m1,
                               parameter_map={
-                                  'opening': [mirror1.baffles.outboard,
-                                              mirror1.baffles.inboard,
-                                              mirror1.baffles.bottom,
-                                              mirror1.baffles.top]},
+                                  'opening': {'left': (mirror1.baffles,
+                                                       'outboard'),
+                                              'right': (mirror1.baffles,
+                                                        'inboard'),
+                                              'bottom': (mirror1.baffles,
+                                                         'bottom'),
+                                              'top': (mirror.baffles, 'top')}},
                               transform_matrix=transform_NSLS2XRT['upward'])
-
 
     # Add one screen at M1 diagnostic to monitor the beam
     # NOTE: the IOC needs to select the right region based on diag position
     # and potentially energy filter based on if a multilayer is inserted.
     m1_diag = ID29Screen(bl=bl,
                          name='m1_diag',
-                         center=[0, 31340.6, 0],  # location (global XRT coords)
+                         center=(0, 31340.6, 0),  # location (global XRT coords)
                          x=np.array([1, 0, 0]),
                          z=np.array([0, 0, 1]),
                          upstream=m1_baffles,
                          parameter_map={},
                          transform_matrix=transform_NSLS2XRT['upward'])
 
-
     # Add slit at M1 diagnostic to block beam when diagnostic unit is in
     m1_diag_slit = ID29Aperture(bl=bl,
                                 name='m1_diag_slit',
-                                center=[0, 31340.7, 0],  # 0.1mm offset to diag
+                                center=(0, 31340.7, 0),  # 0.1mm offset to diag
                                 x='auto', z='auto',
                                 kind=['left', 'right', 'bottom', 'top'],
                                 opening=[-50, 50, -50, 50],
                                 upstream=m1_baffles,
                                 parameter_map={
-                                    'opening': [-50, 50, -50,
-                                                mirror1.diagnostic.multi_trans]},
+                                    'opening': {'left': -50, 'right': 50,
+                                                'bottom': -50,
+                                                'top': (mirror1.diagnostic,
+                                                        'multi_trans')}},
                                 transform_matrix=transform_NSLS2XRT['upward'])
