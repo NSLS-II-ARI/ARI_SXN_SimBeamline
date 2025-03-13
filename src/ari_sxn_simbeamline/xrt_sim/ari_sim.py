@@ -72,7 +72,7 @@ class AriModel:
         for item in self.components:
             updated = getattr(self, item).activate(updated=updated)
 
-            return updated
+        return updated
 
     # Initialize the beamline object
     bl = xrt_raycing.BeamLine(azimuth=0.0, height=0.0, alignE=0)
@@ -97,8 +97,8 @@ class AriModel:
                         filamentBeam=False,
                         uniformRayDensity=False,
                         parameter_map={'center': {'x': 0, 'y': 0, 'z': 0},
-                                       'angles': {'pitch': 0.1, 'roll': 0.2,
-                                                  'yaw': 0.3}},
+                                       'angles': {'pitch': 0, 'roll': 0,
+                                                  'yaw': 0}},
                         transform_matrix=transform_NSLS2XRT['upward'])
 
     # Add the M1 to beamline object bl
@@ -134,7 +134,7 @@ class AriModel:
                                                         'inboard'),
                                               'bottom': (mirror1.baffles,
                                                          'bottom'),
-                                              'top': (mirror.baffles, 'top')}},
+                                              'top': (mirror1.baffles, 'top')}},
                               transform_matrix=transform_NSLS2XRT['upward'])
 
     # Add one screen at M1 diagnostic to monitor the beam
