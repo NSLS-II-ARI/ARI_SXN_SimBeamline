@@ -96,6 +96,50 @@ transform_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
                                           [0, 1.0, 0]])}
 
 
+def _update_parameters(obj, updated=False):
+    """
+    A generic method that updates the XRT model parameters.
+
+    Used in most of the custom XRT components below to update the parameters
+    in the model based on the links in the objects parameter_map dictionary.
+
+    Parameters
+    ----------
+    obj : object
+        The custom XRT object whose parameters are to be updated.
+    updated: a boolean, i.e., False (by default) or True.
+        Boolean that indicates if any of the parameters where updated,
+        Potentially modified and returned.
+
+    Returns
+    -------
+    updated : Boolean
+        Potentially modified the input parameter updated if the update
+        indicates a re-activation required.
+
+    """
+    for parameter, origin in obj._parameter_map.items():
+        if parameter == 'center':
+            origin = tuple(np.dot(obj._transform_matrix, origin))
+            current = getattr(obj, 'center')
+            if origin != current:
+                updated = True
+                setattr(obj, 'center', origin)
+        elif parameter == 'angles':
+            current = (getattr(obj, angle)
+                       for angle in ['pitch', 'roll', 'yaw'])
+            if origin != current:
+                updated = True
+                for i, angle in enumerate(['pitch', 'roll', 'yaw']):
+                    setattr(obj, angle, origin[i])
+        else:
+            if getattr(obj, parameter) != origin:
+                updated = True
+                setattr(obj, parameter, origin)
+
+    return updated
+
+
 class ID29Source(xrt_source.GeometricSource):
     """
     A Geometric Source inherited from XRT.
@@ -123,7 +167,9 @@ class ID29Source(xrt_source.GeometricSource):
          parameter_map = {'center':[mirror.x, mirror.y, 0],
                           'angles':[0, Ry, mirror.Rz]}
 
-          ```
+         here 'center' is [x, y, z] and 'angles' is [pitch, roll, yaw] in XRT
+         global coordinates
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -195,25 +241,7 @@ class ID29Source(xrt_source.GeometricSource):
 
         # TODO: Need to add the 'energies' tuple, with the form (energy,
         #  bandwidth), to this. Consider a look-up table for the bandwidth.
-        for parameter, origin in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                origin = tuple(np.dot(self._transform_matrix, origin))
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = (getattr(self, angle)
-                               for angle in ['pitch', 'roll', 'yaw'])
-                if origin != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', origin)
-                    else:
-                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
-                            setattr(self, angle, origin[i])
-            else:
-                if getattr(self, parameter) != origin:
-                    updated = True
-                    setattr(self, parameter, origin)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamOut = self.shine()
@@ -252,8 +280,7 @@ class ID29OE(xrt_oes.OE):
 
          here 'center' is [x, y, z] and 'angles' is [pitch, roll, yaw] in XRT
          global coordinates
-
-          ```
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -331,26 +358,7 @@ class ID29OE(xrt_oes.OE):
             Potentially modified the input parameter updated if the update
             indicates a re-activation required.
         """
-
-        for parameter, origin in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                origin = tuple(np.dot(self._transform_matrix, origin))
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = (getattr(self, angle)
-                               for angle in ['pitch', 'roll', 'yaw'])
-                if origin != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', origin)
-                    else:
-                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
-                            setattr(self, angle, origin[i])
-            else:
-                if getattr(self, parameter) != origin:
-                    updated = True
-                    setattr(self, parameter, origin)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -388,7 +396,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
          parameter_map = {'center':[mirror.x, mirror.y, 0],
                           'angles':[0, Ry, mirror.Rz]}
 
-          ```
+         here 'center' is [x, y, z] and 'angles' is [pitch, roll, yaw] in XRT
+         global coordinates.
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -466,26 +476,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
             indicates a re-activation required.
 
         """
-
-        for parameter, origin in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                origin = tuple(np.dot(self._transform_matrix, origin))
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = (getattr(self, angle)
-                               for angle in ['pitch', 'roll', 'yaw'])
-                if origin != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', origin)
-                    else:
-                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
-                            setattr(self, angle, origin[i])
-            else:
-                if getattr(self, parameter) != origin:
-                    updated = True
-                    setattr(self, parameter, origin)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -523,7 +514,9 @@ class ID29Screen(xrt_screen.Screen):
          parameter_map = {'center':[mirror.x, mirror.y, 0],
                           'angles':[0, Ry, mirror.Rz]}
 
-          ```
+         here 'center' is [x, y, z] and 'angles' is [pitch, roll, yaw] in XRT
+         global coordinates.
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -600,26 +593,7 @@ class ID29Screen(xrt_screen.Screen):
             indicates a re-activation required.
 
         """
-
-        for parameter, origin in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                origin = tuple(np.dot(self._transform_matrix, origin))
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = (getattr(self, angle)
-                               for angle in ['pitch', 'roll', 'yaw'])
-                if origin != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', origin)
-                    else:
-                        for i, angle in enumerate(['pitch', 'roll', 'yaw']):
-                            setattr(self, angle, origin[i])
-            else:
-                if getattr(self, parameter) != origin:
-                    updated = True
-                    setattr(self, parameter, origin)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')

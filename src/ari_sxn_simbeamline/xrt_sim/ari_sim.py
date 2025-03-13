@@ -98,7 +98,7 @@ class AriModel:
                         filamentBeam=False,
                         uniformRayDensity=False,
                         parameter_map={'center': [0, 0, 0],
-                                       'angles': [0, 0, 0]},
+                                       'angles': [0.1, 0.2, 0.3]},
                         transform_matrix=transform_NSLS2XRT['upward'])
 
 
