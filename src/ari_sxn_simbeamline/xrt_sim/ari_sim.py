@@ -1,5 +1,6 @@
 from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
                             TestM1, transform_NSLS2XRT)
+
 import numpy as np
 import xarray as xr
 import xrt.backends.raycing as xrt_raycing
@@ -12,7 +13,8 @@ mirror1 = TestM1({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
 
 
 # Define a function for creating xarrays from beamin/ beamout objects
-def beam_to_xarray(beam_object, bins=(100, 100, 100)):
+def beam_to_xarray(beam_object, bins=(100, 100, 100),
+                   output_range=((-10, 10), (-10, 10), None)):
     """
     Convert a beam object to an xarray object.
 
@@ -28,6 +30,10 @@ def beam_to_xarray(beam_object, bins=(100, 100, 100)):
     bins : a list of integers, i.e., [100, 100, 100] (by default)
         The number of points along each direction for the histogram.
 
+    output_range : a list of tuples, i.e., [(-1, 1), (-1, 1), (850, 850), None]
+        The range of the histogram along each direction. If None, the range
+        is automatically determined.
+
     Returns
     -------
     beam_array : an xarray object
@@ -39,7 +45,7 @@ def beam_to_xarray(beam_object, bins=(100, 100, 100)):
                         beam_object.__dict__['z'],
                         beam_object.__dict__['E']]).T
 
-    data, edges = np.histogramdd(points, bins=bins)
+    data, edges = np.histogramdd(points, bins=bins, range=output_range)
 
     # convert the edges to the correct lists
     x_coords = list(edges[0][:-1])
