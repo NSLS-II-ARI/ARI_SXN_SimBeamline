@@ -149,7 +149,7 @@ def _parse_parameter_map(default_map):
     default_map : dict
         The default parameter map to parse
     """
-    out = {}
+    out ={}
     for key, value in default_map.items():
         if type(value) is dict:  # value is a dictionary
             temp_out = []

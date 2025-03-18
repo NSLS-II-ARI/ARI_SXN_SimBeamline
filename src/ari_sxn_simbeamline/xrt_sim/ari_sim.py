@@ -1,6 +1,7 @@
 from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
                             TestM1, transform_NSLS2XRT)
 import numpy as np
+import xarray as xr
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.materials as xrt_material
 
@@ -8,6 +9,50 @@ import xrt.backends.raycing.materials as xrt_material
 # Define a test object to use in place of the caproto IOC for testing
 mirror1 = TestM1({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
                   'x': 0, 'y': 0})
+
+
+# Define a function for creating xarrays from beamin/ beamout objects
+def beam_to_xarray(beam_object, bins=(100, 100, 100)):
+    """
+    Convert a beam object to an xarray object.
+
+    This function takes a beam object and converts it to an xarray object
+    with the beam properties as data variables. The xarray object is then
+    returned.
+
+    Parameters
+    ----------
+    beam_object : a beam object
+        The beam object to be converted to an xarray object.
+
+    bins : a list of integers, i.e., [100, 100, 100] (by default)
+        The number of points along each direction for the histogram.
+
+    Returns
+    -------
+    beam_array : an xarray object
+        The xarray object with the beam properties as data variables.
+    """
+
+    # extract the required values
+    points = np.vstack([beam_object.__dict__['x'],
+                        beam_object.__dict__['z'],
+                        beam_object.__dict__['E']]).T
+
+    data, edges = np.histogramdd(points, bins=bins)
+
+    # convert the edges to the correct lists
+    x_coords = list(edges[0][:-1])
+    z_coords = list(edges[1][:-1])
+    E_coords = list(edges[2][:-1])
+
+    # create the xarray object
+    beam_array = xr.DataArray(data,
+                              coords={'x': x_coords, 'z': z_coords,
+                                      'E': E_coords},
+                              dims=['x', 'z', 'E'])
+
+    return beam_array
 
 
 # Define optics coating material instances.
