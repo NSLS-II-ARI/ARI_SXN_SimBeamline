@@ -120,7 +120,9 @@ def _update_parameters(obj, updated=False):
     """
     for parameter, origin in obj._parameter_map.items():
         if parameter == 'center':
-            origin = tuple(np.dot(obj._transform_matrix, origin))
+            origin = np.dot(obj._transform_matrix, origin)
+            origin[1] += obj._y_offset
+            origin = tuple(origin)
             current = getattr(obj, 'center')
             if origin != current:
                 updated = True
@@ -149,7 +151,7 @@ def _parse_parameter_map(default_map):
     default_map : dict
         The default parameter map to parse
     """
-    out ={}
+    out = {}
     for key, value in default_map.items():
         if type(value) is dict:  # value is a dictionary
             temp_out = []
@@ -219,6 +221,9 @@ class ID29Source(xrt_source.GeometricSource):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -247,13 +252,14 @@ class ID29Source(xrt_source.GeometricSource):
         A method that updates the beamOut attribute if any parameters it uses
         have been changed or if updated=True.
     """
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
         self.beamOut = None  # Output in global coordinate!
         self._default_parameter_map = parameter_map
         self._transform_matrix = transform_matrix
+        self._y_offset = center[1]
 
     @property
     def _parameter_map(self):
@@ -338,6 +344,9 @@ class ID29OE(xrt_oes.OE):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -372,10 +381,10 @@ class ID29OE(xrt_oes.OE):
         have been changed or if updated=True.
     """
 
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  upstream=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
@@ -383,6 +392,7 @@ class ID29OE(xrt_oes.OE):
         self._transform_matrix = transform_matrix
         self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
     @property
     def _parameter_map(self):
@@ -468,6 +478,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -500,16 +513,17 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         have been changed or if updated=True.
 
     """
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  upstream=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self._transform_matrix = transform_matrix
         self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
     @property
     def _parameter_map(self):
@@ -597,6 +611,9 @@ class ID29Screen(xrt_screen.Screen):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -627,16 +644,17 @@ class ID29Screen(xrt_screen.Screen):
         have been changed or if updated=True.
 
     """
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  upstream=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self._transform_matrix = transform_matrix
         self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
     @property
     def _parameter_map(self):

@@ -1,11 +1,13 @@
 from custom_devices import (ID29Source, ID29OE, ID29Aperture, ID29Screen,
                             TestM1, transform_NSLS2XRT)
-
+import matplotlib
+from matplotlib import pyplot as plt
 import numpy as np
 import xarray as xr
 import xrt.backends.raycing as xrt_raycing
 import xrt.backends.raycing.materials as xrt_material
 
+matplotlib.use('qtagg')
 
 # Define a test object to use in place of the caproto IOC for testing
 mirror1 = TestM1({'Ry_coarse': np.radians(2), 'Ry_fine': 0, 'Rz': 0,
@@ -139,8 +141,8 @@ class AriModel:
                         distx='normal', dx=0.30,  # source linear profile
                         disty=None, dy=0,
                         distz='normal', dz=0.001,
-                        distxprime='normal', dxprime=0.0001,  # angular profile
-                        distzprime='normal', dzprime=0.01,
+                        distxprime='normal', dxprime=0.1,  # angular profile
+                        distzprime='normal', dzprime=0.1,
                         # source energy profile below
                         distE='normal',
                         energies=(energy_value, energy_bandwidth),
@@ -153,6 +155,7 @@ class AriModel:
                         transform_matrix=transform_NSLS2XRT['upward'])
 
     # Add the M1 to beamline object bl
+    # TODO: This should be an elliptical mirror that focuses the beam.
     m1 = ID29OE(bl=bl,
                 name='m1',
                 center=(0, 27850, 0),  # location (global XRT coords)
