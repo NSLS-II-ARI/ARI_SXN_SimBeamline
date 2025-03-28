@@ -19,7 +19,7 @@ class TestBase:
         initial 'value' for the attribute.
     """
     def __init__(self, inputs):
-        for name, value in inputs:
+        for name, value in inputs.items():
             setattr(self, name, value)
 
 
@@ -78,6 +78,8 @@ class TestM1(TestMirror):
     Adds a function that converts the coarse and fine Ry angles into a single
     angle.
     """
+
+    @property
     def Ry(self):  # function used to calculate the combined M1 Ry
         calculated_Ry = self.Ry_coarse + self.Ry_fine
         return calculated_Ry
@@ -92,6 +94,85 @@ transform_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
                                             [0, -1.0, 0]]),
                       'upward': np.array([[-1.0, 0, 0], [0, 0, 1.0],
                                           [0, 1.0, 0]])}
+
+
+def _update_parameters(obj, updated=False):
+    """
+    A generic method that updates the XRT model parameters.
+
+    Used in most of the custom XRT components below to update the parameters
+    in the model based on the links in the objects parameter_map dictionary.
+
+    Parameters
+    ----------
+    obj : object
+        The custom XRT object whose parameters are to be updated.
+    updated: a boolean, i.e., False (by default) or True.
+        Boolean that indicates if any of the parameters where updated,
+        Potentially modified and returned.
+
+    Returns
+    -------
+    updated : Boolean
+        Potentially modified the input parameter updated if the update
+        indicates a re-activation required.
+
+    """
+    for parameter, origin in obj._parameter_map.items():
+        if parameter == 'center':
+            origin = np.dot(obj._transform_matrix, origin)
+            origin[1] += obj._y_offset
+            origin = tuple(origin)
+            current = getattr(obj, 'center')
+            if origin != current:
+                updated = True
+                setattr(obj, 'center', origin)
+        elif parameter == 'angles':
+            current = tuple([getattr(obj, angle)
+                             for angle in ['pitch', 'roll', 'yaw']])
+            if origin != current:
+                updated = True
+                for i, angle in enumerate(['pitch', 'roll', 'yaw']):
+                    setattr(obj, angle, origin[i])
+        else:
+            if getattr(obj, parameter) != origin:
+                updated = True
+                setattr(obj, parameter, origin)
+
+    return updated
+
+
+def _parse_parameter_map(default_map):
+    """
+    A method that parses the default parameter map into a parameter map.
+
+    Parameters
+    ----------
+    default_map : dict
+        The default parameter map to parse
+    """
+    out = {}
+    for key, value in default_map.items():
+        if type(value) is dict:  # value is a dictionary
+            temp_out = []
+            for axis, val in value.items():
+                if type(val) is float or type(val) is int:
+                    temp_out.append(val)
+                elif type(val) in [list, tuple] and len(val) == 2:
+                    temp_out.append(getattr(val[0], val[1]))
+                else:
+                    raise ValueError(f'Invalid value for {key} in '
+                                     f'{default_map}')
+            out[key] = tuple(temp_out)
+        elif type(value) is float or type(value) is int:
+            out[key] = value
+        elif type(value) in [list, tuple] and len(value) == 2:
+            out[key] = getattr(value[0], value[1])
+        else:
+            raise ValueError(f'Invalid value for {key} in '
+                             f'{default_map}')
+
+    return out
 
 
 class ID29Source(xrt_source.GeometricSource):
@@ -118,10 +199,16 @@ class ID29Source(xrt_source.GeometricSource):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, 0],
-                          'angles':[0, Ry, mirror.Rz]}
+         parameter_map = {'center':{'x':(mirror,'x'), 'y':(mirror,'y'),'z':0),
+                          'angles':{'pitch':0, 'roll':(mirror,'Ry'),
+                                    'yaw': (mirror,'Rz')}
 
-          ```
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates
+
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -134,6 +221,9 @@ class ID29Source(xrt_source.GeometricSource):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -147,7 +237,7 @@ class ID29Source(xrt_source.GeometricSource):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent
         `xrt.backends.raycing.sources.GeometricSource` class.
     beamOut :
@@ -162,14 +252,21 @@ class ID29Source(xrt_source.GeometricSource):
         A method that updates the beamOut attribute if any parameters it uses
         have been changed or if updated=True.
     """
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
         self.beamOut = None  # Output in global coordinate!
-        self._parameter_map = parameter_map
+        self._default_parameter_map = parameter_map
         self._transform_matrix = transform_matrix
+        self._y_offset = center[1]
 
+    @property
+    def _parameter_map(self):
+        """
+        An attribute-like method that returns an updated parameter_map.
+        """
+        return _parse_parameter_map(self._default_parameter_map)
 
     def activate(self, updated=False):
         """
@@ -194,25 +291,7 @@ class ID29Source(xrt_source.GeometricSource):
 
         # TODO: Need to add the 'energies' tuple, with the form (energy,
         #  bandwidth), to this. Consider a look-up table for the bandwidth.
-        for parameter, source in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', source)
-                    else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
-            else:
-                if getattr(self, parameter) != source:
-                    updated = True
-                    setattr(self, parameter, source)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamOut = self.shine()
@@ -240,16 +319,19 @@ class ID29OE(xrt_oes.OE):
          ```
          mirror = TestMirror({'Ry_coarse': np.radians(2),
                               'Ry_fine': 0, 'Rz': 0,
-                              'x': 0, 'y': 0}
+                              'x': 0, 'y': 0})
 
          def Ry():
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, 0],
-                          'angles':[0, Ry, mirror.Rz]}
+         parameter_map = {'center':{'x':(mirror,'x'), 'y':(mirror,'y'),'z':0),
+                          'angles':{'pitch':0, 'roll':(mirror,'Ry'),
+                                    'yaw': (mirror,'Rz')}
 
-          ```
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -262,6 +344,9 @@ class ID29OE(xrt_oes.OE):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -274,7 +359,7 @@ class ID29OE(xrt_oes.OE):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent `xrt.backends.raycing.oes.OE` class.
     beamIn :
         Input to use in the self.reflect() method call inside self.activate
@@ -296,18 +381,25 @@ class ID29OE(xrt_oes.OE):
         have been changed or if updated=True.
     """
 
-    def __init__(self, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
                  upstream=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self.beamOutloc = None  # Output in local coordinate!
         self._transform_matrix = transform_matrix
-        self._parameter_map = parameter_map
+        self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
+    @property
+    def _parameter_map(self):
+        """
+        An attribute-like method that returns an updated parameter_map.
+        """
+        return _parse_parameter_map(self._default_parameter_map)
 
     def activate(self, updated=False):
         """
@@ -328,26 +420,7 @@ class ID29OE(xrt_oes.OE):
             Potentially modified the input parameter updated if the update
             indicates a re-activation required.
         """
-
-        for parameter, source in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', source)
-                    else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
-            else:
-                if getattr(self, parameter) != source:
-                    updated = True
-                    setattr(self, parameter, source)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -382,10 +455,17 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, 0],
-                          'angles':[0, Ry, mirror.Rz]}
 
-          ```
+         parameter_map = {'center':{'x':(mirror,'x'), 'y':(mirror,'y'),'z':0),
+                          'angles':{'pitch':0, 'roll':(mirror,'Ry'),
+                                    'yaw': (mirror,'Rz')}
+
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates
+
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates.
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -398,6 +478,9 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -410,7 +493,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the parent
         `xrt.backends.raycing.apertures.RectangularAperture` class.
     beamIn :
@@ -430,17 +513,24 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         have been changed or if updated=True.
 
     """
-    def __init__(self, upstream=None, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                 **kwargs):
-        super().__init__(*args, **kwargs)
+                 upstream=None, **kwargs):
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self._transform_matrix = transform_matrix
-        self._parameter_map = parameter_map
+        self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
+    @property
+    def _parameter_map(self):
+        """
+        An attribute-like method that returns an updated parameter_map.
+        """
+        return _parse_parameter_map(self._default_parameter_map)
 
     def activate(self, updated=False):
         """
@@ -464,26 +554,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
             indicates a re-activation required.
 
         """
-
-        for parameter, source in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', source)
-                    else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
-            else:
-                if getattr(self, parameter) != source:
-                    updated = True
-                    setattr(self, parameter, source)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
@@ -518,10 +589,16 @@ class ID29Screen(xrt_screen.Screen):
             calculated_Ry = mirror.Ry_coarse + mirror.Ry_fine
             return calculated_Ry
 
-         parameter_map = {'center':[mirror.x, mirror.y, 0],
-                          'angles':[0, Ry, mirror.Rz]}
+         parameter_map = {'center':{'x':(mirror,'x'), 'y':(mirror,'y'),'z':0),
+                          'angles':{'pitch':0, 'roll':(mirror,'Ry'),
+                                    'yaw': (mirror,'Rz')}
 
-          ```
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates
+
+         here 'center' is (x, y, z) and 'angles' is (pitch, roll, yaw) in XRT
+         global coordinates.
+         ```
 
         Notes:
         1.  Only parameters that can be updated for the given device should be
@@ -534,6 +611,9 @@ class ID29Screen(xrt_screen.Screen):
         4.  The three 'angles' Rx, Ry and Rz should be provided as a 3 element
             list (called 'angles' as is done for 'center', with the default
             value, as a float of int, used for any non settable angles.
+    center : list or tuple.
+        A 3 element list or tuple that defines the x, y, z position of the
+        center element in XRT coordinates, i.e., (x, y, z).
     transform_matrix : np.array
         A 3x3 numpy array that is the transformation matrix between the input
         'centre' and 'angle' coordinate system and the xrt coordinate system.
@@ -546,7 +626,7 @@ class ID29Screen(xrt_screen.Screen):
 
     Attributes
     ----------
-    *attrs : many
+    *attributes : many
         The attributes of the `xrt.backends.raycing.screens.Screen` class.
     beamIn :
         Input to use in the self.expose() method call inside self.activate
@@ -564,17 +644,24 @@ class ID29Screen(xrt_screen.Screen):
         have been changed or if updated=True.
 
     """
-    def __init__(self, upstream=None, parameter_map, *args,
+    def __init__(self, parameter_map, *args, center=(0, 0, 0),
                  transform_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                 **kwargs):
-        super().__init__(*args, **kwargs)
+                 upstream=None, **kwargs):
+        super().__init__(*args, center=center, **kwargs)
 
         self.beamIn = None  # Input in global coordinate!
         self.beamOut = None  # Output in global coordinate!
         self._transform_matrix = transform_matrix
-        self._parameter_map = parameter_map
+        self._default_parameter_map = parameter_map
         self._upstream = upstream  # Object from modified XRT
+        self._y_offset = center[1]
 
+    @property
+    def _parameter_map(self):
+        """
+        An attribute-like method that returns an updated parameter_map.
+        """
+        return _parse_parameter_map(self._default_parameter_map)
 
     def activate(self, updated=False):
         """
@@ -599,26 +686,7 @@ class ID29Screen(xrt_screen.Screen):
             indicates a re-activation required.
 
         """
-
-        for parameter, source in self._parameter_map.items():
-            if parameter in ['center', 'angles']:
-                source = np.dot(self._transform_matrix, source)
-                if parameter == 'center':
-                    current = getattr(self, 'center')
-                else:
-                    current = [getattr(self, angle)
-                               for angle in ['Rx', 'Ry', 'Rz']]
-                if source != current:
-                    updated = True
-                    if parameter == 'center':
-                        setattr(self, 'center', source)
-                    else:
-                        for i, angle in enumerate(['Rx', 'Ry', 'Rz']):
-                            setattr(self, angle, source[i])
-            else:
-                if getattr(self, parameter) != source:
-                    updated = True
-                    setattr(self, parameter, source)
+        updated = _update_parameters(self, updated)
 
         if updated:
             self.beamIn = getattr(self._upstream, 'beamOut')
