@@ -84,6 +84,13 @@ class TestM1(TestMirror):
         calculated_Ry = self.Ry_coarse + self.Ry_fine
         return calculated_Ry
 
+    @Ry.setter
+    def Ry(self, set_point): # function used to take input from command line
+
+        raise ValueError('Ry is read only and can only be reset through '
+                         'Ry_coarse and Ry_fine!')
+
+
 
 # Transformation of coordinates between XRT and NSLS-II.
 transform_NSLS2XRT = {'inboard': np.array([[0, -1.0, 0], [0, 0, 1.0],
@@ -268,6 +275,11 @@ class ID29Source(xrt_source.GeometricSource):
         """
         return _parse_parameter_map(self._default_parameter_map)
 
+    @_parameter_map.setter
+    def _parameter_map(self, new_parameter_map): # used to take input manually
+
+        raise ValueError('The _parameter_map can not be reset!')
+
     def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -401,6 +413,11 @@ class ID29OE(xrt_oes.OE):
         """
         return _parse_parameter_map(self._default_parameter_map)
 
+    @_parameter_map.setter
+    def _parameter_map(self, new_parameter_map): # used to take input manually
+
+        raise ValueError('The _parameter_map can not be reset!')
+
     def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -532,6 +549,10 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
         """
         return _parse_parameter_map(self._default_parameter_map)
 
+    @_parameter_map.setter
+    def _parameter_map(self, new_parameter_map): # used to take input manually
+        raise ValueError('The _parameter_map can not be reset!')
+
     def activate(self, updated=False):
         """
         A method adding or modifying the beamOut attribute.
@@ -662,6 +683,10 @@ class ID29Screen(xrt_screen.Screen):
         An attribute-like method that returns an updated parameter_map.
         """
         return _parse_parameter_map(self._default_parameter_map)
+
+    @_parameter_map.setter
+    def _parameter_map(self, new_parameter_map): # used to take input manually
+        raise ValueError('The _parameter_map can not be reset!')
 
     def activate(self, updated=False):
         """
