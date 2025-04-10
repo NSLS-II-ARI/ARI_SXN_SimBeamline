@@ -86,8 +86,10 @@ class TestM1(TestMirror):
 
     @Ry.setter
     def Ry(self, set_point): # function used to take input from command line
-        self.Ry_fine = set_point
-        self.Ry_coarse = 0 # Make sure the Ry is the total value
+
+        raise ValueError('Ry is read only and can only be reset through '
+                         'Ry_coarse and Ry_fine!')
+
 
 
 # Transformation of coordinates between XRT and NSLS-II.
@@ -275,7 +277,8 @@ class ID29Source(xrt_source.GeometricSource):
 
     @_parameter_map.setter
     def _parameter_map(self, new_parameter_map): # used to take input manually
-        self._default_parameter_map = new_parameter_map
+
+        raise ValueError('The _parameter_map can not be reset!')
 
     def activate(self, updated=False):
         """
@@ -412,7 +415,8 @@ class ID29OE(xrt_oes.OE):
 
     @_parameter_map.setter
     def _parameter_map(self, new_parameter_map): # used to take input manually
-        self._default_parameter_map = new_parameter_map
+
+        raise ValueError('The _parameter_map can not be reset!')
 
     def activate(self, updated=False):
         """
@@ -547,7 +551,7 @@ class ID29Aperture(xrt_aperture.RectangularAperture):
 
     @_parameter_map.setter
     def _parameter_map(self, new_parameter_map): # used to take input manually
-        self._default_parameter_map = new_parameter_map
+        raise ValueError('The _parameter_map can not be reset!')
 
     def activate(self, updated=False):
         """
@@ -682,7 +686,7 @@ class ID29Screen(xrt_screen.Screen):
 
     @_parameter_map.setter
     def _parameter_map(self, new_parameter_map): # used to take input manually
-        self._default_parameter_map = new_parameter_map
+        raise ValueError('The _parameter_map can not be reset!')
 
     def activate(self, updated=False):
         """
